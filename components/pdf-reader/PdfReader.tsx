@@ -172,7 +172,7 @@ export default function PdfReader({ fileUrl, title, coverUrl, bookId, backHref }
           touch-action: pan-y !important;
           overscroll-behavior: contain;
         }
-        .rpv-core__page-layer { background: #0f172a !important; }
+        .rpv-core__page-layer { background: #434852 !important; }
         .rpv-core__page-layer canvas {
           box-shadow: 0 3px 28px rgba(0,0,0,0.6);
           border-radius: 3px;
@@ -188,20 +188,115 @@ export default function PdfReader({ fileUrl, title, coverUrl, bookId, backHref }
           from { opacity:0; transform:translateY(-8px); }
           to   { opacity:1; transform:translateY(0); }
         }
-        .rpv-default-layout__toolbar {
-          background: #1e293b !important;
-          border-bottom: 1px solid #334155 !important;
+        /* PDF toolbar — light theme */
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar {
+          background: #f3f4f6 !important;
+          border-bottom: 1px solid #cbd5e1 !important;
+          color: #111827 !important;
         }
-        .rpv-core__icon { color: #94a3b8 !important; }
-        .rpv-default-layout__sidebar-headers {
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar
+          .rpv-toolbar__label,
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar
+          .rpv-zoom__popover-target {
+          color: #111827 !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar
+          .rpv-core__icon,
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar
+          .rpv-core__minimal-button {
+          color: #374151 !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar
+          .rpv-core__minimal-button:hover {
+          background-color: #e2e8f0 !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar
+          .rpv-core__textbox {
+          background: #ffffff !important;
+          border: 1px solid #94a3b8 !important;
+          color: #111827 !important;
+          box-shadow: none !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar
+          .rpv-core__textbox:focus {
+          border-color: #64748b !important;
+          outline: none !important;
+          box-shadow: 0 0 0 1px #64748b !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__toolbar
+          .rpv-zoom__popover-target-arrow {
+          border-top-color: #111827 !important;
+        }
+
+        /* PDF sidebar — light theme, same gray as toolbar */
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__sidebar-headers {
+          background: #f3f4f6 !important;
+          border-right: 1px solid #cbd5e1 !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__sidebar {
+          background: #f3f4f6 !important;
+          border-right: 1px solid #cbd5e1 !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__sidebar-headers
+          .rpv-core__icon,
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__sidebar-headers
+          .rpv-core__minimal-button {
+          color: #374151 !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__sidebar-headers
+          .rpv-core__minimal-button:hover {
+          background-color: #e2e8f0 !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-default-layout__sidebar-headers
+          .rpv-core__minimal-button--selected {
+          background-color: #e2e8f0 !important;
+          color: #111827 !important;
+        }
+
+        .rpv-core__viewer:not(.rpv-core__viewer--dark)
+          .rpv-thumbnail__item:hover {
+          border-color: #64748b !important;
+        }
+
+        /* Keep the existing dark sidebar */
+        .rpv-core__viewer--dark .rpv-default-layout__sidebar-headers {
           background: #1e293b !important;
           border-right: 1px solid #334155 !important;
         }
-        .rpv-default-layout__sidebar {
+
+        .rpv-core__viewer--dark .rpv-default-layout__sidebar {
           background: #0f172a !important;
           border-right: 1px solid #1e293b !important;
         }
-        .rpv-thumbnail__item:hover { border-color: #3b82f6 !important; }
+
+        .rpv-core__viewer--dark .rpv-thumbnail__item:hover {
+          border-color: #3b82f6 !important;
+        }
         @media (max-width: 640px) {
           .rpv-default-layout__sidebar { display: none !important; }
           .rpv-default-layout__main   { left: 0 !important; }
