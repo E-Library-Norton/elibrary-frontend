@@ -97,7 +97,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
+        hostname: "res.cloudflare.com",
       },
       {
         // Cloudflare R2 public bucket (pub-*.r2.dev)

@@ -102,11 +102,12 @@ export default function Footer() {
             </li>
             <li className="flex items-center gap-3 text-sm text-[#5E5E5E] dark:text-gray-400">
               <Phone className="w-4 h-4 text-[#20659C] flex-shrink-0" />
-              <span>+855 23 987 654</span>
+              <span>+855 70 231 331</span>
             </li>
             <li className="flex items-center gap-3 text-sm text-[#5E5E5E] dark:text-gray-400">
               <Mail className="w-4 h-4 text-[#20659C] flex-shrink-0" />
-              <span>library@norton.edu.kh</span>
+              <span>elibrarynorton@gmail.com
+              </span>
             </li>
           </ul>
         </div>
@@ -115,7 +116,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-[#E2E8F0] dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-xs text-[#9CA3AF] dark:text-gray-500">
+          <p className="text-sm text-[#9CA3AF] dark:text-gray-500">
             © {new Date().getFullYear()} E-Library Norton. All rights reserved.
           </p>
           <div className="flex gap-4">
@@ -123,7 +124,7 @@ export default function Footer() {
               <Link
                 key={item}
                 href="#"
-                className="text-xs text-[#9CA3AF] dark:text-gray-500 hover:text-[#20659C] dark:hover:text-white transition-colors"
+                className="text-sm text-[#9CA3AF] dark:text-gray-500 hover:text-[#20659C] dark:hover:text-white transition-colors"
               >
                 {item}
               </Link>

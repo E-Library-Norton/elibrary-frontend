@@ -50,18 +50,18 @@ export default function HeroSection() {
             {/* Headline */}
             <h1 className="opacity-0 animate-[heroReveal_0.8s_ease_0.2s_forwards] leading-[1.06] tracking-tight mb-6">
               <span className="block text-5xl sm:text-6xl lg:text-[5.5rem] font-black text-[#20659C] dark:text-white uppercase">
-                Next&nbsp;Gen
+                Norton
               </span>
-              <span className="block text-4xl sm:text-5xl lg:text-[4.5rem] font-black text-gray-900 dark:text-white uppercase">
-                Digital Library
+              <span className="block text-4xl sm:text-5xl lg:text-[4.5rem] font-black text-[#DF900A] uppercase">
+                Education Tomorrow
               </span>
               <span className="block text-4xl sm:text-5xl lg:text-[4.5rem] font-black text-[#55B9EA] uppercase">
-                For Students
+                Leaders
               </span>
             </h1>
 
             {/* Sub */}
-            <p className="max-w-xl mx-auto text-base sm:text-lg text-gray-500 dark:text-white/40 leading-relaxed mb-10 opacity-0 animate-[heroReveal_0.8s_ease_0.35s_forwards]">
+            <p className="max-w-xl mx-auto text-base sm:text-xl text-gray-500 dark:text-white/40 leading-relaxed mb-10 opacity-0 animate-[heroReveal_0.8s_ease_0.35s_forwards]">
               Access&nbsp;<span className="font-semibold text-gray-800 dark:text-white/70">{totalBooks} books</span>,
               research papers and digital resources — free for every Norton University student, anytime, anywhere.
             </p>
