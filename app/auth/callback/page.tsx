@@ -6,6 +6,11 @@ import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useAppDispatch } from "@/lib/hooks";
 import { setCredentials } from "@/store/slices/authSlice";
 import { hydrateLibrary } from "@/store/slices/librarySlice";
+import {
+  consumeOAuthReturnPath,
+  getSafeAuthRedirect,
+  withAuthRedirect,
+} from "@/lib/auth-navigation";
 
 function OAuthCallbackInner() {
   const router       = useRouter();
@@ -18,11 +23,16 @@ function OAuthCallbackInner() {
     const error        = params.get("error");
     const accessToken  = params.get("accessToken");
     const refreshToken = params.get("refreshToken");
+    const storedReturnPath = consumeOAuthReturnPath();
+    const returnPath = getSafeAuthRedirect(
+      params.get("next") ?? storedReturnPath
+    );
+    const signInPath = withAuthRedirect("/auth/signin", returnPath);
 
     if (error || !accessToken || !refreshToken) {
       setStatus("error");
       setMessage("OAuth sign-in was cancelled or failed. Please try again.");
-      setTimeout(() => router.replace("/auth/signin"), 3000);
+      setTimeout(() => router.replace(signInPath), 3000);
       return;
     }
 
@@ -45,12 +55,12 @@ function OAuthCallbackInner() {
 
         setStatus("success");
         setMessage("Signed in successfully! Redirecting…");
-        setTimeout(() => router.replace("/"), 1000);
+        setTimeout(() => router.replace(returnPath), 1000);
       } catch (err: unknown) {
         const e = err as Error;
         setStatus("error");
         setMessage(e.message || "Something went wrong. Please try again.");
-        setTimeout(() => router.replace("/auth/signin"), 3000);
+        setTimeout(() => router.replace(signInPath), 3000);
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps

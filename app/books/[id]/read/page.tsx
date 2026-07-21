@@ -6,7 +6,12 @@ import { useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBook } from "@/hooks/useBooks";
-import { getBooksReturnHref, withBooksReturnHref } from "@/lib/books-navigation";
+import {
+  getCatalogLabel,
+  getCatalogReturnHref,
+  withCatalogReturnHref,
+} from "@/lib/catalog-navigation";
+import { withAuthRedirect } from "@/lib/auth-navigation";
 import { useAppSelector } from "@/lib/hooks";
 import { selectIsAuthenticated, selectIsAuthLoading } from "@/store/slices/authSlice";
 
@@ -20,8 +25,11 @@ export default function ReadPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const id = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
-  const booksReturnHref = getBooksReturnHref(searchParams.get("from"));
-  const detailHref = withBooksReturnHref(`/books/${id}`, booksReturnHref);
+  const catalogReturnHref = getCatalogReturnHref(searchParams.get("from"));
+  const catalogLabel = getCatalogLabel(catalogReturnHref);
+  const detailHref = withCatalogReturnHref(`/books/${id}`, catalogReturnHref);
+  const readerHref = withCatalogReturnHref(`/books/${id}/read`, catalogReturnHref);
+  const signInHref = withAuthRedirect("/auth/signin", readerHref);
 
   const { book, isLoading, isError } = useBook(id);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -31,25 +39,25 @@ export default function ReadPage() {
   if (!isAuthenticated && !isAuthLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen w-screen bg-[#0f172a] gap-6 px-6 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-yellow-400/10 flex items-center justify-center">
-          <AlertCircle className="w-8 h-8 text-yellow-400" />
-        </div>
-        <div>
-          <h2 className="text-white text-xl font-bold">Login Required</h2>
-          <p className="text-slate-400 text-sm mt-2 max-w-xs mx-auto">
-            You need to be logged in to read this book.
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
-          <Button asChild variant="outline" className="flex-1">
-            <Link href={detailHref}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
-            </Link>
-          </Button>
-          <Button asChild className="flex-1">
-            <Link href="/auth/signin">Sign In</Link>
-          </Button>
-        </div>
+          <div className="w-16 h-16 rounded-2xl bg-yellow-400/10 flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 text-yellow-400" />
+          </div>
+          <div>
+            <h2 className="text-white text-xl font-bold">Login Required</h2>
+            <p className="text-slate-400 text-sm mt-2 max-w-xs mx-auto">
+              You need to be logged in to read this book.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
+            <Button asChild variant="outline" className="flex-1">
+              <Link href={detailHref}>
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              </Link>
+            </Button>
+            <Button asChild className="flex-1">
+              <Link href={signInHref}>Sign In</Link>
+            </Button>
+          </div>
       </div>
     );
   }
@@ -81,8 +89,8 @@ export default function ReadPage() {
           <p className="text-slate-400 text-sm mt-2">This book could not be loaded.</p>
         </div>
         <Button asChild variant="outline" className="w-full max-w-xs">
-          <Link href={booksReturnHref}>
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Books
+          <Link href={catalogReturnHref}>
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to {catalogLabel}
           </Link>
         </Button>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -25,6 +25,8 @@ import { cn } from "@/lib/utils";
 import { useBooks } from "@/hooks/useBooks";
 import { useGetCategoriesQuery } from "@/store/api/booksApi";
 import { StarRating } from "@/components/ui/star-rating";
+import { useCatalogUrlState } from "@/hooks/useCatalogUrlState";
+import { withCatalogReturnHref } from "@/lib/catalog-navigation";
 
 const LIMIT = 12;
 
@@ -80,20 +82,49 @@ function SkeletonCard() {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-export default function VideosPage() {
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [categoryId, setCategoryId] = useState<string>("");
-  const [view, setView] = useState<"grid" | "list">("grid");
+function VideosPageContent() {
+  const {
+    search,
+    categoryId,
+    page,
+    view,
+    sortOption: sortOpt,
+    defaultSort,
+    pushQuery,
+    setPage,
+    listingHref,
+  } = useCatalogUrlState(sortOptions);
+  const [searchInput, setSearchInput] = useState(search);
   const [showFilter, setShowFilter] = useState(false);
-  const [sortOpt, setSortOpt] = useState(sortOptions[0]);
-  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => { setSearch(searchInput); setPage(1); }, 400);
+    if (searchInput === search) return;
+
+    const t = setTimeout(() => {
+      pushQuery({ search: searchInput.trim() || null, page: null });
+    }, 400);
     return () => clearTimeout(t);
-  }, [searchInput]);
+  }, [pushQuery, search, searchInput]);
+
+  const setCategory = (nextCategoryId: string) => {
+    pushQuery({ categoryId: nextCategoryId || null, page: null });
+    setShowFilter(false);
+  };
+
+  const setSort = (option: (typeof sortOptions)[number]) => {
+    const isDefault = option === defaultSort;
+    pushQuery({
+      sortBy: isDefault ? null : option.value,
+      sortOrder: isDefault ? null : option.order,
+      page: null,
+    });
+    setShowFilter(false);
+  };
 
   const { books, total, totalPages, isLoading, isFetching, isError } = useBooks({
     page,
@@ -112,9 +143,16 @@ export default function VideosPage() {
   const categories = catData?.data ?? [];
 
   const clearFilters = () => {
-    setSearchInput(""); setSearch(""); setCategoryId(""); setSortOpt(sortOptions[0]); setPage(1);
+    setSearchInput("");
+    pushQuery({
+      search: null,
+      categoryId: null,
+      sortBy: null,
+      sortOrder: null,
+      page: null,
+    });
   };
-  const hasFilters = !!search || !!categoryId || sortOpt !== sortOptions[0];
+  const hasFilters = !!search || !!categoryId || sortOpt !== defaultSort;
 
   return (
     <>
@@ -151,7 +189,11 @@ export default function VideosPage() {
                 <Input
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { setSearch(searchInput); setPage(1); } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      pushQuery({ search: searchInput.trim() || null, page: null });
+                    }
+                  }}
                   placeholder="Search videos…"
                   className="pl-10 h-11 bg-transparent text-white placeholder:text-white/35 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
@@ -159,7 +201,7 @@ export default function VideosPage() {
               <Button
                 size="lg"
                 className="bg-purple-600 hover:bg-purple-500 text-white rounded-xl px-6 h-11 font-semibold"
-                onClick={() => { setSearch(searchInput); setPage(1); }}
+                onClick={() => pushQuery({ search: searchInput.trim() || null, page: null })}
               >
                 Search
               </Button>
@@ -217,7 +259,7 @@ export default function VideosPage() {
                 <ul className="space-y-1">
                   <li>
                     <button
-                      onClick={() => { setCategoryId(""); setPage(1); setShowFilter(false); }}
+                      onClick={() => setCategory("")}
                       className={cn("w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
                         !categoryId ? "bg-purple-600 text-white font-semibold" : "text-[#5E5E5E] dark:text-gray-400 hover:bg-purple-600/10 hover:text-purple-700"
                       )}
@@ -226,7 +268,7 @@ export default function VideosPage() {
                   {categories.map((cat) => (
                     <li key={cat.id}>
                       <button
-                        onClick={() => { setCategoryId(String(cat.id)); setPage(1); setShowFilter(false); }}
+                        onClick={() => setCategory(String(cat.id))}
                         className={cn("w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
                           categoryId === String(cat.id) ? "bg-purple-600 text-white font-semibold" : "text-[#5E5E5E] dark:text-gray-400 hover:bg-purple-600/10 hover:text-purple-700"
                         )}
@@ -246,7 +288,7 @@ export default function VideosPage() {
                   {sortOptions.map((opt) => (
                     <button
                       key={opt.value + opt.order}
-                      onClick={() => { setSortOpt(opt); setPage(1); setShowFilter(false); }}
+                      onClick={() => setSort(opt)}
                       className={cn("w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
                         sortOpt === opt ? "bg-purple-600/10 text-purple-700 dark:text-purple-300 font-semibold" : "text-[#5E5E5E] dark:text-gray-400 hover:bg-purple-600/5"
                       )}
@@ -280,7 +322,7 @@ export default function VideosPage() {
                     </Button>
                   )}
                   {categoryId && categories.find((c) => String(c.id) === categoryId) && (
-                    <Badge variant="default" className="gap-1 cursor-pointer bg-purple-600 hover:bg-purple-700" onClick={() => { setCategoryId(""); setPage(1); }}>
+                    <Badge variant="default" className="gap-1 cursor-pointer bg-purple-600 hover:bg-purple-700" onClick={() => setCategory("")}>
                       {categories.find((c) => String(c.id) === categoryId)?.name}
                       <X className="w-3 h-3" />
                     </Badge>
@@ -288,10 +330,10 @@ export default function VideosPage() {
                 </div>
 
                 <div className="flex items-center gap-1 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-purple-100/60 dark:border-gray-800/60 rounded-xl p-1 shadow-sm">
-                  <button onClick={() => setView("grid")} className={cn("p-1.5 rounded-md transition-colors", view === "grid" ? "bg-purple-600 text-white" : "text-[#5E5E5E] hover:text-purple-700")}>
+                  <button onClick={() => pushQuery({ view: null })} className={cn("p-1.5 rounded-md transition-colors", view === "grid" ? "bg-purple-600 text-white" : "text-[#5E5E5E] hover:text-purple-700")}>
                     <Grid3X3 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setView("list")} className={cn("p-1.5 rounded-md transition-colors", view === "list" ? "bg-purple-600 text-white" : "text-[#5E5E5E] hover:text-purple-700")}>
+                  <button onClick={() => pushQuery({ view: "list" })} className={cn("p-1.5 rounded-md transition-colors", view === "list" ? "bg-purple-600 text-white" : "text-[#5E5E5E] hover:text-purple-700")}>
                     <List className="w-4 h-4" />
                   </button>
                 </div>
@@ -325,7 +367,7 @@ export default function VideosPage() {
                 <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
                   {filtered.map((book, idx) => (
                     <Link
-                      href={`/books/${book.id}?tab=video`}
+                      href={withCatalogReturnHref(`/books/${book.id}?tab=video`, listingHref)}
                       key={book.id}
                       className="group block opacity-0 animate-[heroReveal_0.5s_ease_forwards]"
                       style={{ animationDelay: `${idx * 0.05}s` }}
@@ -392,7 +434,7 @@ export default function VideosPage() {
                 <div className="space-y-3">
                   {filtered.map((book, idx) => (
                     <Link
-                      href={`/books/${book.id}?tab=video`}
+                      href={withCatalogReturnHref(`/books/${book.id}?tab=video`, listingHref)}
                       key={book.id}
                       className="group block opacity-0 animate-[heroReveal_0.4s_ease_forwards]"
                       style={{ animationDelay: `${idx * 0.04}s` }}
@@ -446,7 +488,7 @@ export default function VideosPage() {
               {/* Pagination */}
               {!isLoading && totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
-                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+                  <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -464,7 +506,7 @@ export default function VideosPage() {
                         </Button>
                       )
                     )}
-                  <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+                  <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}>
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
@@ -474,5 +516,19 @@ export default function VideosPage() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function VideosPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-gray-950">
+          <Loader2 className="h-8 w-8 animate-spin text-purple-600" aria-label="Loading videos" />
+        </div>
+      }
+    >
+      <VideosPageContent />
+    </Suspense>
   );
 }

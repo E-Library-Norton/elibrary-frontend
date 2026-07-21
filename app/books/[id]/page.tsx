@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import QRCode from "react-qr-code";
 import {
   BookOpen,
@@ -46,7 +46,11 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Book } from "@/types";
 import { useGetVideoUrlQuery, useGetAudioUrlQuery, useShareBookMutation } from "@/store/api/booksApi";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { getBooksReturnHref, withBooksReturnHref } from "@/lib/books-navigation";
+import {
+  getCatalogLabel,
+  getCatalogReturnHref,
+  withCatalogReturnHref,
+} from "@/lib/catalog-navigation";
 import {
   toggleFavorite,
   selectIsFavorite,
@@ -56,6 +60,9 @@ import {
 } from "@/store/slices/librarySlice";
 import ReviewSection from "@/components/ReviewSection";
 import { StarRating } from "@/components/ui/star-rating";
+import { withAuthRedirect } from "@/lib/auth-navigation";
+
+type ProtectedBookAction = "read" | "video" | "audio" | "download" | "review";
 
 function BookCover({
   coverUrl,
@@ -81,6 +88,77 @@ function BookCover({
   return (
     <div className="w-full h-full bg-gradient-to-br from-[#20659C] to-[#55B9EA] flex items-center justify-center">
       <BookOpen className="w-24 h-24 text-white/50" />
+    </div>
+  );
+}
+
+function MediaLoadNotice({
+  media,
+  signInHref,
+  onRetry,
+}: {
+  media: "video" | "audio";
+  signInHref: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4 rounded-xl border border-[#20659C]/20 bg-[#20659C]/5 p-4 text-[#1A1A1A] dark:border-[#55B9EA]/30 dark:bg-[#20659C]/10 dark:text-white sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#20659C]/10 text-[#20659C] dark:bg-[#55B9EA]/15 dark:text-[#55B9EA]">
+          <AlertCircle className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold">
+            Could not load {media}
+          </p>
+          <p className="mt-0.5 text-xs text-[#5E5E5E] dark:text-gray-400">
+            Your session may have expired. Sign in again to continue from this
+            {" "}{media}.
+          </p>
+        </div>
+      </div>
+      <div className="flex shrink-0 gap-2">
+        <Button type="button" size="sm" variant="outline" onClick={onRetry}>
+          Try Again
+        </Button>
+        <Button type="button" size="sm" asChild>
+          <Link href={signInHref}>Sign In</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function MediaSignInNotice({
+  media,
+  signInHref,
+}: {
+  media: "video" | "audio";
+  signInHref: string;
+}) {
+  const isVideo = media === "video";
+  const action = isVideo ? "watch" : "listen to";
+  const Icon = isVideo ? Video : Headphones;
+
+  return (
+    <div className="flex flex-col gap-4 rounded-xl border border-[#20659C]/20 bg-[#20659C]/5 p-5 text-[#1A1A1A] dark:border-[#55B9EA]/30 dark:bg-[#20659C]/10 dark:text-white sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#20659C]/10 text-[#20659C] dark:bg-[#55B9EA]/15 dark:text-[#55B9EA]">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold">
+            Sign in to {action} this {media}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-[#5E5E5E] dark:text-gray-400">
+            After signing in, you will return to this page and continue with the
+            selected {media}.
+          </p>
+        </div>
+      </div>
+      <Button type="button" size="sm" className="shrink-0" asChild>
+        <Link href={signInHref}>Sign In</Link>
+      </Button>
     </div>
   );
 }
@@ -384,10 +462,31 @@ function CitationGenerator({ book }: { book: Book }) {
    ═══════════════════════════════════════════════ */
 export default function BookDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const id = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
-  const booksReturnHref = getBooksReturnHref(searchParams.get("from"));
-  const readHref = withBooksReturnHref(`/books/${id}/read`, booksReturnHref);
+  const requestedMediaTab = searchParams.get("tab");
+  const defaultCatalogHref =
+    requestedMediaTab === "video"
+      ? "/videos"
+      : requestedMediaTab === "audio"
+        ? "/audios"
+        : "/books";
+  const catalogReturnHref = getCatalogReturnHref(
+    searchParams.get("from"),
+    defaultCatalogHref
+  );
+  const catalogLabel = getCatalogLabel(catalogReturnHref);
+  const detailHref = withCatalogReturnHref(`/books/${id}`, catalogReturnHref);
+  const readHref = withCatalogReturnHref(`/books/${id}/read`, catalogReturnHref);
+  const videoHref = withCatalogReturnHref(
+    `/books/${id}?tab=video`,
+    catalogReturnHref
+  );
+  const audioHref = withCatalogReturnHref(
+    `/books/${id}?tab=audio`,
+    catalogReturnHref
+  );
   const { book, isLoading, isError } = useBook(id);
   const [shareBook] = useShareBookMutation();
 
@@ -397,7 +496,7 @@ export default function BookDetailPage() {
     }
   }, [book?.id, shareBook]);
 
-  const { user } = useAuth();
+  const { user, isAuthenticated, isAuthLoading } = useAuth();
   const dispatch = useAppDispatch();
 
   const [shareOpen, setShareOpen] = useState(false);
@@ -416,19 +515,74 @@ export default function BookDetailPage() {
   // Auto-open correct media tab when ?tab= is in URL
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab === 'video' || tab === 'audio') setActiveMediaTab(tab);
+    setActiveMediaTab(tab === 'video' || tab === 'audio' ? tab : null);
   }, [searchParams]);
 
   // Presigned media URLs — only fetched when user opens the player
-  const { data: videoUrlData, isLoading: videoUrlLoading, isError: videoUrlError } = useGetVideoUrlQuery(
-    id, { skip: activeMediaTab !== 'video' || !book?.videoUrl }
+  const {
+    data: videoUrlData,
+    isLoading: videoUrlLoading,
+    isError: videoUrlError,
+    refetch: refetchVideoUrl,
+  } = useGetVideoUrlQuery(
+    id, { skip: activeMediaTab !== 'video' || !book?.videoUrl || !isAuthenticated }
   );
-  const { data: audioUrlData, isLoading: audioUrlLoading, isError: audioUrlError } = useGetAudioUrlQuery(
-    id, { skip: activeMediaTab !== 'audio' || !book?.audioUrl }
+  const {
+    data: audioUrlData,
+    isLoading: audioUrlLoading,
+    isError: audioUrlError,
+    refetch: refetchAudioUrl,
+  } = useGetAudioUrlQuery(
+    id, { skip: activeMediaTab !== 'audio' || !book?.audioUrl || !isAuthenticated }
   );
 
   const presignedVideoUrl = videoUrlData?.data?.url;
   const presignedAudioUrl = audioUrlData?.data?.url;
+
+  const openMediaPlayer = (media: "video" | "audio") => {
+    const mediaHref = media === "video" ? videoHref : audioHref;
+    window.history.pushState(null, "", mediaHref);
+    setActiveMediaTab(media);
+  };
+
+  const closeMediaPlayer = () => {
+    window.history.pushState(null, "", detailHref);
+    setActiveMediaTab(null);
+  };
+
+  const continueProtectedAction = (action: ProtectedBookAction) => {
+    if (action === "read") router.push(readHref);
+    if (action === "video" || action === "audio") openMediaPlayer(action);
+    if (action === "download") window.location.assign(`/api/books/${id}/download`);
+  };
+
+  const requestProtectedAction = (action: ProtectedBookAction) => {
+    if (action === "video" || action === "audio") {
+      openMediaPlayer(action);
+      return;
+    }
+
+    if (isAuthenticated) {
+      continueProtectedAction(action);
+      return;
+    }
+
+    const returnPath =
+      action === "read"
+        ? readHref
+        : detailHref;
+
+    router.push(withAuthRedirect("/auth/signin", returnPath));
+  };
+
+  const handleMediaAction = (media: "video" | "audio") => {
+    if (activeMediaTab === media) {
+      closeMediaPlayer();
+      return;
+    }
+
+    requestProtectedAction(media);
+  };
 
   const generateSummary = useCallback(async () => {
     if (aiSummary || summaryLoading) return;
@@ -507,8 +661,8 @@ export default function BookDetailPage() {
             This book doesn&apos;t exist or failed to load.
           </p>
           <Button asChild className="gap-2 bg-[#20659C] hover:bg-[#55B9EA]">
-            <Link href={booksReturnHref}>
-              <ArrowLeft className="w-4 h-4" /> Back to Books
+            <Link href={catalogReturnHref}>
+              <ArrowLeft className="w-4 h-4" /> Back to {catalogLabel}
             </Link>
           </Button>
         </div>
@@ -528,15 +682,15 @@ export default function BookDetailPage() {
           <nav className="flex items-center gap-1.5 text-sm text-[#9CA3AF] mb-8 opacity-0 animate-[heroReveal_0.5s_ease_0.1s_forwards]">
             <Link href="/" className="hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={booksReturnHref} className="hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors">Books</Link>
+            <Link href={catalogReturnHref} className="hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors">{catalogLabel}</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-[#1A1A1A] dark:text-white font-medium line-clamp-1">{book.title}</span>
           </nav>
 
           {/* Back button */}
           <Button variant="ghost" asChild className="gap-2 text-[#5E5E5E] dark:text-gray-400 hover:text-[#20659C] dark:hover:text-[#55B9EA] hover:bg-[#20659C]/5 mb-6 -ml-3 opacity-0 animate-[heroReveal_0.5s_ease_0.15s_forwards]">
-            <Link href={booksReturnHref}>
-              <ArrowLeft className="w-4 h-4" /> Back to Books
+            <Link href={catalogReturnHref}>
+              <ArrowLeft className="w-4 h-4" /> Back to {catalogLabel}
             </Link>
           </Button>
 
@@ -567,10 +721,11 @@ export default function BookDetailPage() {
 
                 {/* Primary action */}
                 {book.pdfUrl ? (
-                  <Button className="w-full gap-2.5 bg-[#20659C] hover:bg-[#55B9EA] shadow-lg shadow-[#20659C]/20 hover:shadow-[#55B9EA]/30 transition-all duration-300 hover:scale-[1.02] h-12 text-base font-semibold rounded-xl" asChild>
-                    <Link href={readHref}>
-                      <Eye className="w-5 h-5" /> Read Online
-                    </Link>
+                  <Button
+                    className="w-full gap-2.5 bg-[#20659C] hover:bg-[#55B9EA] shadow-lg shadow-[#20659C]/20 hover:shadow-[#55B9EA]/30 transition-all duration-300 hover:scale-[1.02] h-12 text-base font-semibold rounded-xl"
+                    onClick={() => requestProtectedAction("read")}
+                  >
+                    <Eye className="w-5 h-5" /> Read Online
                   </Button>
                 ) : (
                   <Button className="w-full gap-2 h-12 rounded-xl" disabled>
@@ -584,7 +739,7 @@ export default function BookDetailPage() {
                     {book.videoUrl && (
                       <Button
                         variant={activeMediaTab === 'video' ? 'default' : 'outline'}
-                        onClick={() => setActiveMediaTab(activeMediaTab === 'video' ? null : 'video')}
+                        onClick={() => handleMediaAction('video')}
                         className={cn(
                           "w-full gap-2.5 h-11 rounded-xl font-semibold transition-all duration-300",
                           activeMediaTab === 'video'
@@ -599,7 +754,7 @@ export default function BookDetailPage() {
                     {book.audioUrl && (
                       <Button
                         variant={activeMediaTab === 'audio' ? 'default' : 'outline'}
-                        onClick={() => setActiveMediaTab(activeMediaTab === 'audio' ? null : 'audio')}
+                        onClick={() => handleMediaAction('audio')}
                         className={cn(
                           "w-full gap-2.5 h-11 rounded-xl font-semibold transition-all duration-300",
                           activeMediaTab === 'audio'
@@ -640,13 +795,14 @@ export default function BookDetailPage() {
 
                   {/* Download */}
                   {book.pdfUrl ? (
-                    <a
-                      href={`/api/books/${id}/download`}
+                    <button
+                      type="button"
+                      onClick={() => requestProtectedAction("download")}
                       className="flex flex-col items-center gap-1.5 p-3 rounded-xl border bg-white/80 dark:bg-gray-900/80 border-[#E2E8F0] dark:border-gray-800 text-[#5E5E5E] dark:text-gray-400 hover:text-[#20659C] hover:border-[#20659C]/30 transition-all duration-300 hover:-translate-y-0.5"
                     >
                       <Download className="w-5 h-5" />
                       <span className="text-[10px] font-semibold uppercase tracking-wider">Download</span>
-                    </a>
+                    </button>
                   ) : (
                     <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl border bg-gray-50 dark:bg-gray-900/50 border-[#E2E8F0] dark:border-gray-800 text-[#9CA3AF] cursor-not-allowed">
                       <Download className="w-5 h-5" />
@@ -766,7 +922,7 @@ export default function BookDetailPage() {
                     <div className="flex border-b border-[#E2E8F0]/60 dark:border-gray-800/60">
                       {book.videoUrl && (
                         <button
-                          onClick={() => setActiveMediaTab('video')}
+                          onClick={() => openMediaPlayer('video')}
                           className={cn(
                             "flex items-center gap-2 px-5 py-3.5 text-sm font-semibold transition-all duration-200 border-b-2 -mb-px",
                             activeMediaTab === 'video'
@@ -779,7 +935,7 @@ export default function BookDetailPage() {
                       )}
                       {book.audioUrl && (
                         <button
-                          onClick={() => setActiveMediaTab('audio')}
+                          onClick={() => openMediaPlayer('audio')}
                           className={cn(
                             "flex items-center gap-2 px-5 py-3.5 text-sm font-semibold transition-all duration-200 border-b-2 -mb-px",
                             activeMediaTab === 'audio'
@@ -791,7 +947,7 @@ export default function BookDetailPage() {
                         </button>
                       )}
                       <button
-                        onClick={() => setActiveMediaTab(null)}
+                        onClick={closeMediaPlayer}
                         className="ml-auto flex items-center justify-center px-4 text-[#9CA3AF] hover:text-[#5E5E5E] transition-colors"
                         title="Close player"
                       >
@@ -806,7 +962,21 @@ export default function BookDetailPage() {
                           <div className="flex items-center gap-2 text-xs font-semibold text-purple-600 dark:text-purple-300 uppercase tracking-wider">
                             <Play className="w-3.5 h-3.5" /> Supplementary Video
                           </div>
-                          {videoUrlLoading && (
+                          {isAuthLoading && (
+                            <div className="flex h-40 items-center justify-center rounded-xl bg-[#20659C]/5 dark:bg-[#20659C]/10">
+                              <div className="flex flex-col items-center gap-3 text-[#20659C] dark:text-[#55B9EA]">
+                                <Loader2 className="h-8 w-8 animate-spin" />
+                                <span className="text-sm font-medium">Checking your session…</span>
+                              </div>
+                            </div>
+                          )}
+                          {!isAuthLoading && !isAuthenticated && (
+                            <MediaSignInNotice
+                              media="video"
+                              signInHref={withAuthRedirect("/auth/signin", videoHref)}
+                            />
+                          )}
+                          {isAuthenticated && videoUrlLoading && (
                             <div className="flex items-center justify-center h-40 rounded-xl bg-purple-50 dark:bg-purple-900/10">
                               <div className="flex flex-col items-center gap-3 text-purple-600 dark:text-purple-400">
                                 <Loader2 className="w-8 h-8 animate-spin" />
@@ -814,16 +984,14 @@ export default function BookDetailPage() {
                               </div>
                             </div>
                           )}
-                          {videoUrlError && (
-                            <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400">
-                              <AlertCircle className="w-5 h-5 shrink-0" />
-                              <div>
-                                <p className="text-sm font-semibold">Could not load video</p>
-                                <p className="text-xs mt-0.5">Please make sure you are signed in and try again.</p>
-                              </div>
-                            </div>
+                          {isAuthenticated && videoUrlError && (
+                            <MediaLoadNotice
+                              media="video"
+                              signInHref={withAuthRedirect("/auth/signin", videoHref)}
+                              onRetry={() => void refetchVideoUrl()}
+                            />
                           )}
-                          {presignedVideoUrl && (
+                          {isAuthenticated && presignedVideoUrl && (
                             <video
                               key={presignedVideoUrl}
                               controls
@@ -844,7 +1012,21 @@ export default function BookDetailPage() {
                           <div className="flex items-center gap-2 text-xs font-semibold text-amber-600 dark:text-amber-300 uppercase tracking-wider">
                             <Music className="w-3.5 h-3.5" /> Audio Version
                           </div>
-                          {audioUrlLoading && (
+                          {isAuthLoading && (
+                            <div className="flex h-32 items-center justify-center rounded-xl bg-[#20659C]/5 dark:bg-[#20659C]/10">
+                              <div className="flex flex-col items-center gap-3 text-[#20659C] dark:text-[#55B9EA]">
+                                <Loader2 className="h-8 w-8 animate-spin" />
+                                <span className="text-sm font-medium">Checking your session…</span>
+                              </div>
+                            </div>
+                          )}
+                          {!isAuthLoading && !isAuthenticated && (
+                            <MediaSignInNotice
+                              media="audio"
+                              signInHref={withAuthRedirect("/auth/signin", audioHref)}
+                            />
+                          )}
+                          {isAuthenticated && audioUrlLoading && (
                             <div className="flex items-center justify-center h-32 rounded-xl bg-amber-50 dark:bg-amber-900/10">
                               <div className="flex flex-col items-center gap-3 text-amber-600 dark:text-amber-400">
                                 <Loader2 className="w-8 h-8 animate-spin" />
@@ -852,16 +1034,14 @@ export default function BookDetailPage() {
                               </div>
                             </div>
                           )}
-                          {audioUrlError && (
-                            <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400">
-                              <AlertCircle className="w-5 h-5 shrink-0" />
-                              <div>
-                                <p className="text-sm font-semibold">Could not load audio</p>
-                                <p className="text-xs mt-0.5">Please make sure you are signed in and try again.</p>
-                              </div>
-                            </div>
+                          {isAuthenticated && audioUrlError && (
+                            <MediaLoadNotice
+                              media="audio"
+                              signInHref={withAuthRedirect("/auth/signin", audioHref)}
+                              onRetry={() => void refetchAudioUrl()}
+                            />
                           )}
-                          {presignedAudioUrl && (
+                          {isAuthenticated && presignedAudioUrl && (
                             <div className="rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 p-5 border border-amber-200/60 dark:border-amber-800/30">
                               {/* Cover art + title */}
                               <div className="flex items-center gap-4 mb-4">
@@ -1035,7 +1215,7 @@ export default function BookDetailPage() {
                   </h2>
                   <div className="grid grid-cols-3 gap-3">
                     {filteredRelated.map((rb) => (
-                      <Link href={withBooksReturnHref(`/books/${rb.id}`, booksReturnHref)} key={rb.id} className="group">
+                      <Link href={withCatalogReturnHref(`/books/${rb.id}`, catalogReturnHref)} key={rb.id} className="group">
                         <div className="relative">
                           <div className="absolute -inset-px bg-gradient-to-r from-[#20659C] to-[#55B9EA] rounded-xl opacity-0 group-hover:opacity-20 blur-sm transition-all duration-300" />
                           <Card className="relative overflow-hidden bg-white/80 dark:bg-gray-900/80 border-[#E2E8F0]/60 dark:border-gray-800/60 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
@@ -1068,7 +1248,10 @@ export default function BookDetailPage() {
               <div className="opacity-0 animate-[heroReveal_0.6s_ease_0.75s_forwards]">
                 <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-[#E2E8F0]/60 dark:border-gray-800/60 overflow-hidden">
                   <CardContent className="p-6">
-                    <ReviewSection bookId={id} />
+                    <ReviewSection
+                      bookId={id}
+                      onRequestSignIn={() => requestProtectedAction("review")}
+                    />
                   </CardContent>
                 </Card>
               </div>

@@ -60,7 +60,6 @@ function UserMenu() {
       ? `${user.firstName} ${user.lastName}`
       : user?.username ?? "Account";
   const roles = user?.roles ?? [];
-  const isPrivileged = roles.includes("admin") || roles.includes("librarian");
   const roleLabel = roles[0] ?? "";
   const avatarSrc = user?.avatar ? '/api/auth/avatar' : null;
 
@@ -153,7 +152,7 @@ function UserMenu() {
   );
 }
 
-// ── Main Navbar ─────────────────────────────────────────────────────────────
+// ── Main Navbar
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -183,9 +182,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => setOpen(false), [pathname]);
-
   return (
     <header
       className={cn(
@@ -197,7 +193,7 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2 group">
           <div className="w-9 h-9 rounded-lg overflow-hidden">
             <img src="/logo.webp" alt="E-Library Norton" width={40} height={40} className="w-full h-full object-contain" />
           </div>

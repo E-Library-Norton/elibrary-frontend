@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { Send, Loader2, MessageSquare, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
 import { StarRating } from "@/components/ui/star-rating";
 
-// ── Review form ──────────────────────────────────────────────────────────────
+// Review form
 function ReviewForm({ bookId, onSuccess }: { bookId: string; onSuccess?: () => void }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -88,7 +88,7 @@ function ReviewForm({ bookId, onSuccess }: { bookId: string; onSuccess?: () => v
   );
 }
 
-// ── Single review card ───────────────────────────────────────────────────────
+// Single review card
 function ReviewCard({
   review,
   currentUserId,
@@ -162,8 +162,14 @@ function ReviewCard({
   );
 }
 
-// ── Main section ─────────────────────────────────────────────────────────────
-export default function ReviewSection({ bookId }: { bookId: string }) {
+// Main section
+export default function ReviewSection({
+  bookId,
+  onRequestSignIn,
+}: {
+  bookId: string;
+  onRequestSignIn: () => void;
+}) {
   const { user, isAuthenticated } = useAuth();
   const { data, isLoading, refetch } = useGetBookReviewsQuery({ bookId });
 
@@ -215,9 +221,13 @@ export default function ReviewSection({ bookId }: { bookId: string }) {
 
       {!isAuthenticated && (
         <div className="text-sm text-[#9CA3AF] bg-gray-50 dark:bg-gray-900/50 rounded-xl px-4 py-3 border border-[#E2E8F0] dark:border-gray-800">
-          <a href="/auth/signin" className="text-[#20659C] hover:underline font-medium">
+          <button
+            type="button"
+            onClick={onRequestSignIn}
+            className="text-[#20659C] hover:underline font-medium"
+          >
             Sign in
-          </a>{" "}
+          </button>{" "}
           to leave a review
         </div>
       )}

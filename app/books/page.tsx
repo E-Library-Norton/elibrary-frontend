@@ -28,7 +28,7 @@ import { useBooks } from "@/hooks/useBooks";
 import { useGetCategoriesQuery } from "@/store/api/booksApi";
 import { StarRating } from "@/components/ui/star-rating";
 import { useAppSelector } from "@/lib/hooks";
-import { withBooksReturnHref } from "@/lib/books-navigation";
+import { withCatalogReturnHref } from "@/lib/catalog-navigation";
 import { selectIsFavorite } from "@/store/slices/librarySlice";
 
 
@@ -185,7 +185,7 @@ function BooksPageContent() {
     : pathname;
 
   const getBookHref = (bookId: number) =>
-    withBooksReturnHref(`/books/${bookId}`, listingHref);
+    withCatalogReturnHref(`/books/${bookId}`, listingHref);
 
   useEffect(() => {
     setSearchInput(search);
