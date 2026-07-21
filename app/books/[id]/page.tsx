@@ -46,6 +46,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Book } from "@/types";
 import { useGetVideoUrlQuery, useGetAudioUrlQuery, useShareBookMutation } from "@/store/api/booksApi";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { getBooksReturnHref, withBooksReturnHref } from "@/lib/books-navigation";
 import {
   toggleFavorite,
   selectIsFavorite,
@@ -56,7 +57,6 @@ import {
 import ReviewSection from "@/components/ReviewSection";
 import { StarRating } from "@/components/ui/star-rating";
 
-// ── Cover: Cloudinary or gradient fallback ───────────────────────────────────
 function BookCover({
   coverUrl,
   title,
@@ -85,7 +85,7 @@ function BookCover({
   );
 }
 
-// ── Loading skeleton ─────────────────────────────────────────────────────────
+// ── Loading skeleton
 function DetailSkeleton() {
   return (
     <section className="min-h-screen bg-[#F8FAFC] dark:bg-gray-950 pt-24">
@@ -107,7 +107,7 @@ function DetailSkeleton() {
   );
 }
 
-// ── Share modal ──────────────────────────────────────────────────────────────
+// ── Share modal ─────
 function ShareModal({
   open,
   onClose,
@@ -233,7 +233,7 @@ function ShareModal({
   );
 }
 
-// ── Reading progress bar ─────────────────────────────────────────────────────
+// ── Reading progress bar
 function ReadingProgressBar({ bookId }: { bookId: number }) {
   const progress = useAppSelector(selectReadingProgress(bookId));
   if (!progress) return null;
@@ -272,7 +272,7 @@ function ReadingProgressBar({ bookId }: { bookId: number }) {
   );
 }
 
-// ── Citation helpers ─────────────────────────────────────────────────────────
+// ── Citation helpers
 type CitationFormat = 'APA' | 'MLA' | 'Chicago' | 'IEEE';
 
 function _fmtAPA(name: string) {
@@ -386,6 +386,8 @@ export default function BookDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const id = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
+  const booksReturnHref = getBooksReturnHref(searchParams.get("from"));
+  const readHref = withBooksReturnHref(`/books/${id}/read`, booksReturnHref);
   const { book, isLoading, isError } = useBook(id);
   const [shareBook] = useShareBookMutation();
 
@@ -505,7 +507,7 @@ export default function BookDetailPage() {
             This book doesn&apos;t exist or failed to load.
           </p>
           <Button asChild className="gap-2 bg-[#20659C] hover:bg-[#55B9EA]">
-            <Link href="/books">
+            <Link href={booksReturnHref}>
               <ArrowLeft className="w-4 h-4" /> Back to Books
             </Link>
           </Button>
@@ -526,14 +528,14 @@ export default function BookDetailPage() {
           <nav className="flex items-center gap-1.5 text-sm text-[#9CA3AF] mb-8 opacity-0 animate-[heroReveal_0.5s_ease_0.1s_forwards]">
             <Link href="/" className="hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href="/books" className="hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors">Books</Link>
+            <Link href={booksReturnHref} className="hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors">Books</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-[#1A1A1A] dark:text-white font-medium line-clamp-1">{book.title}</span>
           </nav>
 
           {/* Back button */}
           <Button variant="ghost" asChild className="gap-2 text-[#5E5E5E] dark:text-gray-400 hover:text-[#20659C] dark:hover:text-[#55B9EA] hover:bg-[#20659C]/5 mb-6 -ml-3 opacity-0 animate-[heroReveal_0.5s_ease_0.15s_forwards]">
-            <Link href="/books">
+            <Link href={booksReturnHref}>
               <ArrowLeft className="w-4 h-4" /> Back to Books
             </Link>
           </Button>
@@ -566,7 +568,7 @@ export default function BookDetailPage() {
                 {/* Primary action */}
                 {book.pdfUrl ? (
                   <Button className="w-full gap-2.5 bg-[#20659C] hover:bg-[#55B9EA] shadow-lg shadow-[#20659C]/20 hover:shadow-[#55B9EA]/30 transition-all duration-300 hover:scale-[1.02] h-12 text-base font-semibold rounded-xl" asChild>
-                    <Link href={`/books/${id}/read`}>
+                    <Link href={readHref}>
                       <Eye className="w-5 h-5" /> Read Online
                     </Link>
                   </Button>
@@ -1033,7 +1035,7 @@ export default function BookDetailPage() {
                   </h2>
                   <div className="grid grid-cols-3 gap-3">
                     {filteredRelated.map((rb) => (
-                      <Link href={`/books/${rb.id}`} key={rb.id} className="group">
+                      <Link href={withBooksReturnHref(`/books/${rb.id}`, booksReturnHref)} key={rb.id} className="group">
                         <div className="relative">
                           <div className="absolute -inset-px bg-gradient-to-r from-[#20659C] to-[#55B9EA] rounded-xl opacity-0 group-hover:opacity-20 blur-sm transition-all duration-300" />
                           <Card className="relative overflow-hidden bg-white/80 dark:bg-gray-900/80 border-[#E2E8F0]/60 dark:border-gray-800/60 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">

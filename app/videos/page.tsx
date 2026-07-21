@@ -30,12 +30,13 @@ const LIMIT = 12;
 
 const sortOptions = [
   { value: "created_at", label: "Newest First", order: "DESC" },
-  { value: "title",      label: "Title A–Z",    order: "ASC"  },
-  { value: "views",      label: "Most Viewed",  order: "DESC" },
-  { value: "downloads",  label: "Most Downloaded", order: "DESC" },
+  { value: "title", label: "Title A–Z", order: "ASC" },
+  { value: "views", label: "Most Viewed", order: "DESC" },
+  { value: "review_count", label: "Most Reviewed", order: "DESC" },
+  { value: "downloads", label: "Most Downloaded", order: "DESC" },
 ];
 
-// ── Cover with play-overlay ───────────────────────────────────────────────────
+// ── Cover with play-overlay
 function VideoCover({
   coverUrl,
   title,
@@ -80,13 +81,13 @@ function SkeletonCard() {
 
 // ═════════════════════════════════════════════════════════════════════════════
 export default function VideosPage() {
-  const [searchInput, setSearchInput]   = useState("");
-  const [search, setSearch]             = useState("");
-  const [categoryId, setCategoryId]     = useState<string>("");
-  const [view, setView]                 = useState<"grid" | "list">("grid");
-  const [showFilter, setShowFilter]     = useState(false);
-  const [sortOpt, setSortOpt]           = useState(sortOptions[0]);
-  const [page, setPage]                 = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [showFilter, setShowFilter] = useState(false);
+  const [sortOpt, setSortOpt] = useState(sortOptions[0]);
+  const [page, setPage] = useState(1);
 
   // Debounce search
   useEffect(() => {
@@ -96,12 +97,12 @@ export default function VideosPage() {
 
   const { books, total, totalPages, isLoading, isFetching, isError } = useBooks({
     page,
-    limit:      LIMIT,
-    hasVideo:   "true",
-    search:     search || undefined,
+    limit: LIMIT,
+    hasVideo: "true",
+    search: search || undefined,
     categoryId: categoryId || undefined,
-    sortBy:     sortOpt.value,
-    sortOrder:  sortOpt.order as "ASC" | "DESC",
+    sortBy: sortOpt.value,
+    sortOrder: sortOpt.order as "ASC" | "DESC",
   });
 
   // Client-side safety: only show books that genuinely have a videoUrl

@@ -2,10 +2,11 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBook } from "@/hooks/useBooks";
+import { getBooksReturnHref, withBooksReturnHref } from "@/lib/books-navigation";
 import { useAppSelector } from "@/lib/hooks";
 import { selectIsAuthenticated, selectIsAuthLoading } from "@/store/slices/authSlice";
 
@@ -17,7 +18,10 @@ const PdfReader = dynamic(() => import("@/components/pdf-reader/PdfReader"), {
 
 export default function ReadPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
+  const booksReturnHref = getBooksReturnHref(searchParams.get("from"));
+  const detailHref = withBooksReturnHref(`/books/${id}`, booksReturnHref);
 
   const { book, isLoading, isError } = useBook(id);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -38,7 +42,7 @@ export default function ReadPage() {
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
           <Button asChild variant="outline" className="flex-1">
-            <Link href={`/books/${id}`}>
+            <Link href={detailHref}>
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Link>
           </Button>
@@ -77,7 +81,7 @@ export default function ReadPage() {
           <p className="text-slate-400 text-sm mt-2">This book could not be loaded.</p>
         </div>
         <Button asChild variant="outline" className="w-full max-w-xs">
-          <Link href="/books">
+          <Link href={booksReturnHref}>
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Books
           </Link>
         </Button>
@@ -97,7 +101,7 @@ export default function ReadPage() {
           <p className="text-slate-400 text-sm mt-2">This book does not have a PDF file yet.</p>
         </div>
         <Button asChild variant="outline" className="w-full max-w-xs">
-          <Link href={`/books/${id}`}>
+          <Link href={detailHref}>
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Link>
         </Button>
@@ -116,7 +120,7 @@ export default function ReadPage() {
         title={book.title}
         coverUrl={book.coverUrl}
         bookId={id}
-        backHref={`/books/${id}`}
+        backHref={detailHref}
       />
     </div>
   );
