@@ -38,6 +38,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
     default: SITE_TITLE,
     template: "%s | Norton University E-Library",
@@ -46,6 +47,7 @@ export const metadata: Metadata = {
   keywords: SITE_KEYWORDS,
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   creator: SITE_NAME,
+  publisher: SITE_NAME,
   openGraph: {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
@@ -108,7 +110,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en "
+      lang="en"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
