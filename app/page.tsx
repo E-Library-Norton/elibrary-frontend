@@ -10,7 +10,7 @@ import TestimonialsSection from "@/components/home/TestimonialsSection";
 
 export default function HomePage() {
   return (
-    <>
+    <main>
       <HeroSection />
       <TrustedBySection />
       <StatsSection />
@@ -20,6 +20,6 @@ export default function HomePage() {
       <FeaturedVideos />
       <FeaturedAudios />
       <TestimonialsSection />
-    </>
+    </main>
   );
 }
