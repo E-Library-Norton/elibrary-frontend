@@ -1,9 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { passwordSchema } from "@/lib/auth-schemas";
 import { safeDecrypt } from "@/lib/crypto";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-// ─── PUT /api/auth/change-password ────────────────────────────────────────────
+// ─── PUT /api/auth/change-password 
 export async function PUT(req: NextRequest) {
   try {
     const raw = req.cookies.get("access_token")?.value;
@@ -21,9 +22,13 @@ export async function PUT(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (!newPassword || newPassword.length < 8) {
+    const passwordResult = passwordSchema.safeParse(newPassword);
+    if (!passwordResult.success) {
       return NextResponse.json(
-        { success: false, error: { message: "Password must be at least 8 characters long." } },
+        {
+          success: false,
+          error: { message: passwordResult.error.issues[0].message },
+        },
         { status: 400 }
       );
     }

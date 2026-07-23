@@ -21,9 +21,21 @@ import {
 import { cn } from "@/lib/utils";
 
 const passwordRules = [
-  { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
-  { label: "Contains a number", test: (p: string) => /\d/.test(p) },
+  {
+    label: "8-20 characters",
+    test: (password: string) =>
+      password.length >= 8 && password.length <= 20,
+  },
+  {
+    label: "Contains lowercase",
+    test: (password: string) => /[a-z]/.test(password),
+  },
   { label: "Contains uppercase", test: (p: string) => /[A-Z]/.test(p) },
+  { label: "Contains a number", test: (p: string) => /\d/.test(p) },
+  {
+    label: "Contains a special character",
+    test: (password: string) => /[^A-Za-z0-9\s]/.test(password),
+  },
 ];
 
 function SignUpPageContent() {
@@ -287,10 +299,10 @@ function SignUpPageContent() {
 
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-[#1A1A1A] dark:text-gray-100">
-                    Student ID <span className="text-red-500">*</span>
+                    Student ID
                   </label>
                   <Input
-                    placeholder="e.g. NU2024001"
+                    placeholder="Enter your student ID"
                     value={form.studentId}
                     onChange={(e) => update("studentId", e.target.value)}
                     aria-invalid={Boolean(fieldErrors.studentId)}
@@ -326,7 +338,7 @@ function SignUpPageContent() {
                   </label>
                   <Input
                     autoFocus
-                    placeholder="sokha_chan"
+                    placeholder="sokhachan"
                     value={form.username}
                     onChange={(e) => update("username", e.target.value)}
                     aria-invalid={Boolean(fieldErrors.username)}

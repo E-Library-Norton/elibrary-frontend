@@ -29,6 +29,14 @@ import {
   useGetMeQuery,
 } from "@/store/api/authApi";
 import { toast } from "sonner";
+import { passwordSchema, profileSchema } from "@/lib/auth-schemas";
+
+type ApiError = {
+  data?: {
+    error?: { message?: string };
+    message?: string;
+  };
+};
 
 function getInitials(
   firstName?: string,
@@ -166,13 +174,19 @@ function ProfilePageContent() {
 
   const handleSaveProfile = async () => {
     setProfileError("");
+    const profileResult = profileSchema.safeParse(profile);
+    if (!profileResult.success) {
+      setProfileError(profileResult.error.issues[0].message);
+      return;
+    }
+
     try {
-      await updateProfile(profile).unwrap();
+      await updateProfile(profileResult.data).unwrap();
       setProfileSuccess(true);
       setEditMode(false);
       setTimeout(() => setProfileSuccess(false), 4000);
     } catch (err: unknown) {
-      const data = (err as { data?: any })?.data;
+      const data = (err as ApiError)?.data;
       setProfileError(
         data?.error?.message ??
         data?.message ??
@@ -188,8 +202,9 @@ function ProfilePageContent() {
       setPwError("New passwords do not match.");
       return;
     }
-    if (pw.newPassword.length < 8) {
-      setPwError("Password must be at least 8 characters long.");
+    const passwordResult = passwordSchema.safeParse(pw.newPassword);
+    if (!passwordResult.success) {
+      setPwError(passwordResult.error.issues[0].message);
       return;
     }
     try {
@@ -198,7 +213,7 @@ function ProfilePageContent() {
       setPwSuccess(true);
       setTimeout(() => setPwSuccess(false), 4000);
     } catch (err: unknown) {
-      const data = (err as { data?: any })?.data;
+      const data = (err as ApiError)?.data;
       setPwError(
         data?.error?.message ??
         data?.message ??
@@ -592,7 +607,8 @@ function ProfilePageContent() {
                 </button>
               </div>
               <p className="text-xs text-[#9CA3AF] mt-1">
-                Password must be at least 8 characters long.
+                Use 8-20 characters with uppercase, lowercase, a number, and a
+                special character.
               </p>
             </div>
 

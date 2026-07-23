@@ -3,7 +3,7 @@ import { safeDecrypt } from "@/lib/crypto";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-// ─── PATCH /api/auth/profile ──────────────────────────────────────────────────
+// ─── PATCH /api/auth/profile
 export async function PATCH(req: NextRequest) {
   try {
     const raw = req.cookies.get("access_token")?.value;
@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest) {
 
     const data = await upstream.json();
     return NextResponse.json(data, { status: upstream.status });
-  } catch {
-    return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
   }
 }

@@ -1,9 +1,9 @@
-// ─── User ────────────────────────────────────────────────────────────────────
+// User
 export interface User {
   id: number;
   username: string;
   email: string;
-  studentId: string;
+  studentId: string | null;
   firstName: string;
   lastName: string;
   avatar: string | null;
@@ -11,7 +11,7 @@ export interface User {
   isEmailVerified?: boolean;
 }
 
-// ─── Book ────────────────────────────────────────────────────────────────────
+// Book
 export interface BookCategory {
   id: number;
   name: string;
@@ -61,7 +61,7 @@ export interface Book {
   updatedAt?: string;
 }
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
+// Pagination
 export interface Pagination {
   total: number;
   page: number;
@@ -78,14 +78,14 @@ export interface PaginatedData<T> {
   totalPages: number;
 }
 
-// ─── API Response ─────────────────────────────────────────────────────────────
+// API response
 export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data: T;
 }
 
-// ─── Auth inputs ─────────────────────────────────────────────────────────────
+// Authentication inputs
 export interface LoginInput {
   identifier: string; // username | email | studentId
   password: string;
@@ -97,7 +97,7 @@ export interface RegisterInput {
   password: string;
   firstName: string;
   lastName: string;
-  studentId: string;
+  studentId?: string;
 }
 
 export interface UpdateProfileInput {
@@ -113,7 +113,7 @@ export interface ChangePasswordInput {
   confirmPassword: string;
 }
 
-// ─── Books query params ───────────────────────────────────────────────────────
+// Book query parameters
 export interface BooksQuery {
   page?: number;
   limit?: number;
@@ -134,7 +134,7 @@ export interface BooksQuery {
   sortOrder?: "ASC" | "DESC";
 }
 
-// ─── Auth state ───────────────────────────────────────────────────────────────
+// Authentication state
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -142,7 +142,7 @@ export interface AuthState {
   isAuthLoading: boolean;
 }
 
-// ─── UI state ────────────────────────────────────────────────────────────────
+// UI state
 export type ToastType = "success" | "error" | "info" | "warning";
 
 export interface Toast {

@@ -4,11 +4,12 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  BookOpen, Mail, Lock, Eye, EyeOff,
+  Mail, Lock, Eye, EyeOff,
   ArrowLeft, Loader2, AlertCircle, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { passwordSchema } from "@/lib/auth-schemas";
 
 type Step = "email" | "otp" | "password" | "done";
 
@@ -70,11 +71,11 @@ export default function ForgotPasswordPage() {
   const strength = (() => {
     if (!password) return 0;
     let s = 0;
-    if (password.length >= 8)            s++;
-    if (password.length >= 12)           s++;
+    if (password.length >= 8 && password.length <= 20) s++;
+    if (/[a-z]/.test(password))          s++;
     if (/[A-Z]/.test(password))          s++;
     if (/[0-9]/.test(password))          s++;
-    if (/[^A-Za-z0-9]/.test(password))   s++;
+    if (/[^A-Za-z0-9\s]/.test(password)) s++;
     return s;
   })();
   const strengthLabel = ["", "Weak", "Fair", "Good", "Strong", "Very Strong"][strength];
@@ -170,7 +171,11 @@ export default function ForgotPasswordPage() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) { setError("Passwords do not match."); return; }
-    if (password.length < 8)  { setError("Password must be at least 8 characters."); return; }
+    const passwordResult = passwordSchema.safeParse(password);
+    if (!passwordResult.success) {
+      setError(passwordResult.error.issues[0].message);
+      return;
+    }
     setError("");
     setLoading(true);
     try {
