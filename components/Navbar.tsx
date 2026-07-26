@@ -83,7 +83,7 @@ function UserMenu() {
           )}
         </div>
         <div className="hidden sm:block text-left">
-          <p className="text-sm font-semibold text-[#1A1A1A] leading-none">{displayName}</p>
+          <p className="text-sm font-semibold text-[#1A1A1A] dark:text-white leading-none">{displayName}</p>
           {roleLabel && (
             <p className="text-xs text-[#9CA3AF] leading-none mt-0.5 capitalize">{roleLabel}</p>
           )}
