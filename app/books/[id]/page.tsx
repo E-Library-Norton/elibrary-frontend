@@ -34,7 +34,6 @@ import {
   BookMarked,
   TrendingUp,
   X,
-  Quote,
   Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useBook, useBooks } from "@/hooks/useBooks";
 import { useAuth } from "@/hooks/useAuth";
-import type { Book } from "@/types";
 import { useGetVideoUrlQuery, useGetAudioUrlQuery, useShareBookMutation } from "@/store/api/booksApi";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -61,6 +59,7 @@ import {
 import ReviewSection from "@/components/ReviewSection";
 import { StarRating } from "@/components/ui/star-rating";
 import { withAuthRedirect } from "@/lib/auth-navigation";
+import { BookCitationCard } from "@/components/reading/BookCitationCard";
 
 type ProtectedBookAction = "read" | "video" | "audio" | "download" | "review";
 
@@ -347,113 +346,6 @@ function ReadingProgressBar({ bookId }: { bookId: number }) {
         <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{timeLabel}</span>
       </div>
     </div>
-  );
-}
-
-// ── Citation helpers
-type CitationFormat = 'APA' | 'MLA' | 'Chicago' | 'IEEE';
-
-function _fmtAPA(name: string) {
-  const p = name.trim().split(/\s+/);
-  if (p.length === 1) return p[0];
-  const last = p[p.length - 1];
-  const initials = p.slice(0, -1).map((w) => `${w[0].toUpperCase()}.`).join(' ');
-  return `${last}, ${initials}`;
-}
-function _fmtFirst(name: string) {
-  const p = name.trim().split(/\s+/);
-  const last = p[p.length - 1];
-  const first = p.slice(0, -1).join(' ');
-  return first ? `${last}, ${first}` : last;
-}
-function _fmtIEEE(name: string) {
-  const p = name.trim().split(/\s+/);
-  if (p.length === 1) return p[0];
-  const last = p[p.length - 1];
-  const initials = p.slice(0, -1).map((w) => `${w[0].toUpperCase()}.`).join(' ');
-  return `${initials} ${last}`;
-}
-function buildCitation(fmt: CitationFormat, book: Book): string {
-  const authors = book.Authors ?? [];
-  const yr    = book.publicationYear ? String(book.publicationYear) : 'n.d.';
-  const pub   = book.Publisher?.name ?? 'n.p.';
-  const title = book.title;
-  const isbn  = book.isbn ? ` ISBN: ${book.isbn}.` : '';
-  const a = (list: typeof authors): string => {
-    if (!list.length) return 'Unknown Author';
-    if (fmt === 'APA') {
-      if (list.length === 1) return _fmtAPA(list[0].name);
-      if (list.length === 2) return `${_fmtAPA(list[0].name)}, & ${_fmtAPA(list[1].name)}`;
-      return list.map((x) => _fmtAPA(x.name)).join(', & ');
-    }
-    if (fmt === 'IEEE') return list.map((x) => _fmtIEEE(x.name)).join(', ');
-    if (list.length === 1) return _fmtFirst(list[0].name);
-    if (list.length === 2) return `${_fmtFirst(list[0].name)}, and ${list[1].name}`;
-    return `${_fmtFirst(list[0].name)}, et al.`;
-  };
-  if (fmt === 'APA')     return `${a(authors)} (${yr}). ${title}. ${pub}.${isbn}`;
-  if (fmt === 'MLA')     return `${a(authors)}. ${title}. ${pub}, ${yr}.${isbn}`;
-  if (fmt === 'Chicago') return `${a(authors)}. ${yr}. ${title}. ${pub}.${isbn}`;
-  /* IEEE */             return `${a(authors)}, "${title}," ${pub}, ${yr}.${isbn}`;
-}
-
-function CitationGenerator({ book }: { book: Book }) {
-  const [fmt, setFmt]       = useState<CitationFormat>('APA');
-  const [copied, setCopied] = useState(false);
-  const citation = buildCitation(fmt, book);
-  const handleCopy = () => {
-    navigator.clipboard.writeText(citation).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-  const editions: Record<CitationFormat, string> = {
-    APA:     '7th Ed. · American Psychological Association',
-    MLA:     '9th Ed. · Modern Language Association',
-    Chicago: '17th Ed. · Chicago Manual of Style',
-    IEEE:    'Institute of Electrical and Electronics Engineers',
-  };
-  return (
-    <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-[#E2E8F0]/60 dark:border-gray-800/60 overflow-hidden">
-      <div className="px-6 py-4 border-b border-[#E2E8F0]/60 dark:border-gray-800/60 flex items-center gap-2">
-        <Quote className="w-4 h-4 text-[#20659C]" />
-        <h2 className="font-bold text-[#1A1A1A] dark:text-white text-sm tracking-wide uppercase">Cite this Book</h2>
-      </div>
-      <CardContent className="p-6">
-        <div className="flex gap-1 mb-4 bg-[#F8FAFC] dark:bg-gray-800 rounded-xl p-1">
-          {(['APA', 'MLA', 'Chicago', 'IEEE'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFmt(f)}
-              className={cn(
-                'flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200',
-                fmt === f
-                  ? 'bg-white dark:bg-gray-700 text-[#20659C] dark:text-[#55B9EA] shadow-sm'
-                  : 'text-[#9CA3AF] hover:text-[#5E5E5E] dark:hover:text-gray-300',
-              )}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-        <div className="relative bg-[#F8FAFC] dark:bg-gray-800/80 rounded-xl p-4 pr-12 border border-[#E2E8F0] dark:border-gray-700 min-h-[80px]">
-          <p className="text-sm text-[#1A1A1A] dark:text-gray-200 leading-relaxed font-mono">{citation}</p>
-          <button
-            onClick={handleCopy}
-            title="Copy citation"
-            className={cn(
-              'absolute top-3 right-3 p-1.5 rounded-lg transition-all duration-200',
-              copied
-                ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                : 'text-[#9CA3AF] hover:text-[#20659C] hover:bg-[#E2E8F0] dark:hover:bg-gray-700',
-            )}
-          >
-            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          </button>
-        </div>
-        <p className="text-[10px] text-[#9CA3AF] mt-2">{editions[fmt]}</p>
-      </CardContent>
-    </Card>
   );
 }
 
@@ -1203,7 +1095,16 @@ export default function BookDetailPage() {
 
               {/* Citation Generator */}
               <div className="opacity-0 animate-[heroReveal_0.6s_ease_0.60s_forwards]">
-                <CitationGenerator book={book} />
+                <BookCitationCard
+                  book={{
+                    id: book.id,
+                    title: book.title,
+                    authors: book.Authors?.map((author) => author.name) ?? [],
+                    publisher: book.Publisher?.name,
+                    publicationYear: book.publicationYear,
+                    isbn: book.isbn,
+                  }}
+                />
               </div>
 
               {/* Related Books */}

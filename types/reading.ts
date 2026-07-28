@@ -1,4 +1,8 @@
-import type { BookCategory } from "@/types";
+import type {
+  BookAuthor,
+  BookCategory,
+  BookPublisher,
+} from "@/types";
 
 export const HIGHLIGHT_COLORS = [
   "yellow",
@@ -52,7 +56,12 @@ export interface ReadingLibraryBook {
   coverUrl: string | null;
   pages: number | null;
   categoryId: number;
+  publicationYear?: number | null;
+  publisherId?: number | null;
+  isbn?: string | null;
   Category?: BookCategory | null;
+  Authors?: BookAuthor[];
+  Publisher?: BookPublisher | null;
 }
 
 export interface ReadingLibraryItem extends ReadingProgress {

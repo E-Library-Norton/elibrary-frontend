@@ -37,6 +37,7 @@ import {
 import { useGetReadingLibraryQuery } from "@/store/api/readingApi";
 import { ReadingProgressBar } from "@/components/reading/ReadingProgressBar";
 import { ContinueReadingButton } from "@/components/reading/ContinueReadingButton";
+import { CitationDialog } from "@/components/reading/CitationDialog";
 
 interface LibraryProgressView {
   bookId: number;
@@ -50,6 +51,10 @@ interface LibraryProgressView {
   bookmarkCount: number;
   noteCount: number;
   timeSpentSeconds: number;
+  authors: string[];
+  publisher?: string | null;
+  publicationYear?: number | null;
+  isbn?: string | null;
 }
 
 // ── Cover fallback ───────────────────────────────────────────────────────────
@@ -198,6 +203,11 @@ function ProgressBookCard({
   progress: LibraryProgressView;
   animationDelay: string;
 }) {
+  const isCompleted =
+    Boolean(progress.completedAt) ||
+    (progress.totalPages > 0 &&
+      progress.currentPage >= progress.totalPages);
+
   return (
     <Card
       className="overflow-hidden border-[#E2E8F0]/60 bg-white/80 opacity-0 shadow-sm backdrop-blur-sm animate-[heroReveal_0.5s_ease_forwards] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800/60 dark:bg-gray-900/80"
@@ -219,7 +229,7 @@ function ProgressBookCard({
               <h4 className="line-clamp-1 text-sm font-bold text-[#1A1A1A] dark:text-white">
                 {progress.title}
               </h4>
-              {progress.completedAt && (
+              {isCompleted && (
                 <Badge className="border-0 bg-emerald-500 text-[10px] text-white">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Completed
@@ -253,11 +263,25 @@ function ProgressBookCard({
             </div>
           </div>
         </Link>
-        <ContinueReadingButton
-          bookId={progress.bookId}
-          pageNumber={progress.currentPage}
-          className="w-full shrink-0 sm:w-auto"
-        />
+        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto">
+          <ContinueReadingButton
+            bookId={progress.bookId}
+            pageNumber={progress.currentPage}
+            className="w-full shrink-0 sm:w-auto"
+          />
+          {isCompleted && (
+            <CitationDialog
+              book={{
+                id: progress.bookId,
+                title: progress.title,
+                authors: progress.authors,
+                publisher: progress.publisher,
+                publicationYear: progress.publicationYear,
+                isbn: progress.isbn,
+              }}
+            />
+          )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -334,6 +358,10 @@ export default function LibraryPage() {
         noteCount: progress.noteCount,
         timeSpentSeconds:
           allProgress[progress.bookId]?.timeSpentSeconds ?? 0,
+        authors: progress.Book.Authors?.map((author) => author.name) ?? [],
+        publisher: progress.Book.Publisher?.name,
+        publicationYear: progress.Book.publicationYear,
+        isbn: progress.Book.isbn,
       }))
     : isReadingLibraryError
       ? Object.values(allProgress).map((progress) => ({
@@ -347,6 +375,7 @@ export default function LibraryPage() {
           bookmarkCount: 0,
           noteCount: 0,
           timeSpentSeconds: progress.timeSpentSeconds,
+          authors: [],
         }))
       : [];
 
