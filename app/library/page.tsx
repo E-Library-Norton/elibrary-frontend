@@ -16,6 +16,8 @@ import {
   Search,
   X,
   CheckCircle2,
+  StickyNote,
+  Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,17 +33,31 @@ import {
   updateReadingProgress,
   type FavoriteBook,
   type ReadingHistoryEntry,
-  type ReadingProgress,
 } from "@/store/slices/librarySlice";
+import { useGetReadingLibraryQuery } from "@/store/api/readingApi";
+import { ReadingProgressBar } from "@/components/reading/ReadingProgressBar";
+import { ContinueReadingButton } from "@/components/reading/ContinueReadingButton";
+
+interface LibraryProgressView {
+  bookId: number;
+  title: string;
+  coverUrl?: string | null;
+  category?: string;
+  currentPage: number;
+  totalPages: number;
+  lastReadAt: string;
+  completedAt: string | null;
+  bookmarkCount: number;
+  noteCount: number;
+  timeSpentSeconds: number;
+}
 
 // ── Cover fallback ───────────────────────────────────────────────────────────
 function BookCover({
-  coverUrl,
   bookId,
   title,
   className,
 }: {
-  coverUrl?: string | null;
   bookId: number;
   title: string;
   className?: string;
@@ -175,6 +191,78 @@ function EmptyState({
   );
 }
 
+function ProgressBookCard({
+  progress,
+  animationDelay,
+}: {
+  progress: LibraryProgressView;
+  animationDelay: string;
+}) {
+  return (
+    <Card
+      className="overflow-hidden border-[#E2E8F0]/60 bg-white/80 opacity-0 shadow-sm backdrop-blur-sm animate-[heroReveal_0.5s_ease_forwards] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md dark:border-gray-800/60 dark:bg-gray-900/80"
+      style={{ animationDelay }}
+    >
+      <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+        <Link
+          href={`/books/${progress.bookId}?from=%2Flibrary`}
+          className="flex min-w-0 flex-1 items-center gap-4"
+        >
+          <div className="h-[88px] w-16 shrink-0 overflow-hidden rounded-lg shadow-sm">
+            <BookCover
+              bookId={progress.bookId}
+              title={progress.title}
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <h4 className="line-clamp-1 text-sm font-bold text-[#1A1A1A] dark:text-white">
+                {progress.title}
+              </h4>
+              {progress.completedAt && (
+                <Badge className="border-0 bg-emerald-500 text-[10px] text-white">
+                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                  Completed
+                </Badge>
+              )}
+              {progress.category && (
+                <Badge
+                  variant="outline"
+                  className="border-[#E2E8F0] text-[10px] text-[#5E5E5E] dark:border-gray-700 dark:text-gray-300"
+                >
+                  {progress.category}
+                </Badge>
+              )}
+            </div>
+            <ReadingProgressBar
+              currentPage={progress.currentPage}
+              totalPages={progress.totalPages}
+              lastReadAt={progress.lastReadAt}
+            />
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-[#5E5E5E] dark:text-gray-400">
+              <span className="flex items-center gap-1">
+                <Bookmark className="h-3.5 w-3.5" />
+                {progress.bookmarkCount} bookmark
+                {progress.bookmarkCount === 1 ? "" : "s"}
+              </span>
+              <span className="flex items-center gap-1">
+                <StickyNote className="h-3.5 w-3.5" />
+                {progress.noteCount} note
+                {progress.noteCount === 1 ? "" : "s"}
+              </span>
+            </div>
+          </div>
+        </Link>
+        <ContinueReadingButton
+          bookId={progress.bookId}
+          pageNumber={progress.currentPage}
+          className="w-full shrink-0 sm:w-auto"
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ═══════════════════════════════════════════════
    LIBRARY DASHBOARD PAGE
    ═══════════════════════════════════════════════ */
@@ -187,7 +275,14 @@ export default function LibraryPage() {
   const recentlyViewed = useAppSelector(selectRecentlyViewed);
   const allProgress = useAppSelector(
     (state) => state.library.readingProgress
-  ) as Record<number, ReadingProgress>;
+  );
+  const {
+    data: readingLibraryResponse,
+    isLoading: isReadingLibraryLoading,
+    isError: isReadingLibraryError,
+  } = useGetReadingLibraryQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   const [activeTab, setActiveTab] = useState<TabId>("favorites");
   const [searchQuery, setSearchQuery] = useState("");
@@ -222,15 +317,50 @@ export default function LibraryPage() {
         );
       } catch { /* ignore */ }
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allProgress, dispatch]);
 
-  // Derived data
-  const readingBooks = Object.values(allProgress).filter(
-    (p) => p.currentPage > 0 && p.currentPage < p.totalPages
+  const serverProgress = readingLibraryResponse?.data.items;
+  const progressBooks: LibraryProgressView[] = serverProgress
+    ? serverProgress.map((progress) => ({
+        bookId: progress.bookId,
+        title: progress.Book.title,
+        coverUrl: progress.Book.coverUrl,
+        category: progress.Book.Category?.name,
+        currentPage: progress.currentPage,
+        totalPages: progress.totalPages,
+        lastReadAt: progress.lastReadAt,
+        completedAt: progress.completedAt,
+        bookmarkCount: progress.bookmarkCount,
+        noteCount: progress.noteCount,
+        timeSpentSeconds:
+          allProgress[progress.bookId]?.timeSpentSeconds ?? 0,
+      }))
+    : isReadingLibraryError
+      ? Object.values(allProgress).map((progress) => ({
+          bookId: progress.bookId,
+          title: progress.title ?? `Book #${progress.bookId}`,
+          coverUrl: progress.coverUrl,
+          currentPage: progress.currentPage,
+          totalPages: progress.totalPages,
+          lastReadAt: progress.lastReadAt,
+          completedAt: progress.completedAt ?? null,
+          bookmarkCount: 0,
+          noteCount: 0,
+          timeSpentSeconds: progress.timeSpentSeconds,
+        }))
+      : [];
+
+  // Server progress is authoritative; local progress remains an offline fallback.
+  const readingBooks = progressBooks.filter(
+    (progress) =>
+      !progress.completedAt &&
+      progress.currentPage > 0 &&
+      progress.currentPage < progress.totalPages
   );
-  const completedBooks = Object.values(allProgress).filter(
-    (p) => p.currentPage >= p.totalPages && p.totalPages > 0
+  const completedBooks = progressBooks.filter(
+    (progress) =>
+      Boolean(progress.completedAt) ||
+      (progress.currentPage >= progress.totalPages && progress.totalPages > 0)
   );
   const totalReadingTime = Object.values(allProgress).reduce(
     (sum, p) => sum + p.timeSpentSeconds,
@@ -246,27 +376,13 @@ export default function LibraryPage() {
   );
 
   // Filter reading and completed books by search
-  const filteredReading = readingBooks.filter((prog) => {
-    const matchFav = favorites.find((f) => f.id === prog.bookId);
-    const matchHistory = recentlyViewed.find((h) => h.bookId === prog.bookId);
-    const title =
-      prog.title ??
-      matchFav?.title ??
-      matchHistory?.title ??
-      `Book #${prog.bookId}`;
-    return title.toLowerCase().includes(searchQuery.toLowerCase());
-  });
-
-  const filteredCompleted = completedBooks.filter((prog) => {
-    const matchFav = favorites.find((f) => f.id === prog.bookId);
-    const matchHistory = recentlyViewed.find((h) => h.bookId === prog.bookId);
-    const title =
-      prog.title ??
-      matchFav?.title ??
-      matchHistory?.title ??
-      `Book #${prog.bookId}`;
-    return title.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const filteredReading = readingBooks.filter((progress) =>
+    progress.title.toLowerCase().includes(normalizedSearch)
+  );
+  const filteredCompleted = completedBooks.filter((progress) =>
+    progress.title.toLowerCase().includes(normalizedSearch)
+  );
 
   // Format time
   const formatTime = (seconds: number) => {
@@ -452,7 +568,6 @@ export default function LibraryPage() {
                         <Card className="overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-[#E2E8F0]/60 dark:border-gray-800/60 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
                           <div className="aspect-[3/4] overflow-hidden relative">
                             <BookCover
-                              coverUrl={fav.coverUrl}
                               bookId={fav.id}
                               title={fav.title}
                               className="transition-transform duration-500 group-hover:scale-105"
@@ -494,7 +609,11 @@ export default function LibraryPage() {
           {/* ════ Currently Reading Tab ════ */}
           {activeTab === "reading" && (
             <>
-              {filteredReading.length === 0 ? (
+              {isReadingLibraryLoading ? (
+                <div className="flex min-h-52 items-center justify-center">
+                  <Loader2 className="h-7 w-7 animate-spin text-[#20659C]" />
+                </div>
+              ) : filteredReading.length === 0 ? (
                 <EmptyState
                   icon={BookMarked}
                   title={
@@ -510,76 +629,13 @@ export default function LibraryPage() {
                 />
               ) : (
                 <div className="space-y-3">
-                  {filteredReading.map((prog: ReadingProgress, i: number) => {
-                    const pct = Math.min(
-                      Math.round(
-                        (prog.currentPage /
-                          Math.max(prog.totalPages, 1)) *
-                          100
-                      ),
-                      100
-                    );
-                    const matchFav = favorites.find((f) => f.id === prog.bookId);
-                    const matchHistory = recentlyViewed.find((h) => h.bookId === prog.bookId);
-                    const title =
-                      prog.title ??
-                      matchFav?.title ??
-                      matchHistory?.title ??
-                      `Book #${prog.bookId}`;
-                    const coverUrl =
-                      prog.coverUrl ?? matchFav?.coverUrl ?? matchHistory?.coverUrl;
-
-                    return (
-                      <Link
-                        href={`/books/${prog.bookId}`}
-                        key={prog.bookId}
-                        className="block opacity-0 animate-[heroReveal_0.5s_ease_forwards]"
-                        style={{ animationDelay: `${0.05 * i}s` }}
-                      >
-                        <Card className="overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-[#E2E8F0]/60 dark:border-gray-800/60 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-                          <CardContent className="p-4 flex items-center gap-4">
-                            {/* Mini cover */}
-                            <div className="w-14 h-[74px] rounded-lg overflow-hidden shrink-0 shadow-sm">
-                              <BookCover
-                                coverUrl={coverUrl}
-                                bookId={prog.bookId}
-                                title={title}
-                              />
-                            </div>
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-bold text-[#1A1A1A] dark:text-white line-clamp-1 mb-1">
-                                {title}
-                              </h4>
-                              <div className="flex items-center gap-3 text-xs text-[#9CA3AF] mb-2">
-                                <span>
-                                  Page {prog.currentPage} of{" "}
-                                  {prog.totalPages}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  {formatTime(prog.timeSpentSeconds)}
-                                </span>
-                              </div>
-                              {/* Progress bar */}
-                              <div className="flex items-center gap-3">
-                                <div className="flex-1 h-2 bg-[#E2E8F0] dark:bg-gray-800 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-gradient-to-r from-[#20659C] to-[#55B9EA] rounded-full transition-all duration-700"
-                                    style={{ width: `${pct}%` }}
-                                  />
-                                </div>
-                                <span className="text-xs font-bold text-[#20659C] dark:text-[#55B9EA] w-10 text-right">
-                                  {pct}%
-                                </span>
-                              </div>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-[#9CA3AF] shrink-0" />
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    );
-                  })}
+                  {filteredReading.map((progress, index) => (
+                    <ProgressBookCard
+                      key={progress.bookId}
+                      progress={progress}
+                      animationDelay={`${0.05 * index}s`}
+                    />
+                  ))}
                 </div>
               )}
             </>
@@ -588,7 +644,11 @@ export default function LibraryPage() {
           {/* ════ Completed Tab ════ */}
           {activeTab === "completed" && (
             <>
-              {filteredCompleted.length === 0 ? (
+              {isReadingLibraryLoading ? (
+                <div className="flex min-h-52 items-center justify-center">
+                  <Loader2 className="h-7 w-7 animate-spin text-[#20659C]" />
+                </div>
+              ) : filteredCompleted.length === 0 ? (
                 <EmptyState
                   icon={CheckCircle2}
                   title={
@@ -603,64 +663,14 @@ export default function LibraryPage() {
                   }
                 />
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {filteredCompleted.map((prog: ReadingProgress, i: number) => {
-                    const matchFav = favorites.find((f) => f.id === prog.bookId);
-                    const matchHistory = recentlyViewed.find((h) => h.bookId === prog.bookId);
-                    const title =
-                      prog.title ??
-                      matchFav?.title ??
-                      matchHistory?.title ??
-                      `Book #${prog.bookId}`;
-                    const coverUrl =
-                      prog.coverUrl ?? matchFav?.coverUrl ?? matchHistory?.coverUrl;
-
-                    return (
-                      <Link
-                        href={`/books/${prog.bookId}`}
-                        key={prog.bookId}
-                        className="group block opacity-0 animate-[heroReveal_0.5s_ease_forwards]"
-                        style={{ animationDelay: `${0.05 * i}s` }}
-                      >
-                        <Card className="overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-[#E2E8F0]/60 dark:border-gray-800/60 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg">
-                          <div className="aspect-[3/4] overflow-hidden relative">
-                            <BookCover
-                              coverUrl={coverUrl}
-                              bookId={prog.bookId}
-                              title={title}
-                              className="transition-transform duration-500 group-hover:scale-105"
-                            />
-                            {/* Completed badge */}
-                            <div className="absolute top-2 left-2">
-                              <Badge className="bg-emerald-500/90 backdrop-blur-sm text-white border-0 text-[10px] px-2 py-0.5 shadow-sm gap-1">
-                                <CheckCircle2 className="w-3 h-3" />
-                                Completed
-                              </Badge>
-                            </div>
-                          </div>
-                          <CardContent className="p-3">
-                            <h4 className="text-xs font-bold text-[#1A1A1A] dark:text-white line-clamp-2 leading-snug group-hover:text-[#20659C] transition-colors">
-                              {title}
-                            </h4>
-                            <div className="flex items-center justify-between mt-1.5">
-                              <p className="text-[10px] text-[#9CA3AF]">
-                                {prog.totalPages} pages
-                              </p>
-                              <p className="text-[10px] text-emerald-500 font-medium flex items-center gap-0.5">
-                                <Clock className="w-2.5 h-2.5" />
-                                {formatTime(prog.timeSpentSeconds)}
-                              </p>
-                            </div>
-                            {prog.completedAt && (
-                              <p className="text-[10px] text-[#9CA3AF] mt-1">
-                                Finished {formatDate(prog.completedAt)}
-                              </p>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    );
-                  })}
+                <div className="space-y-3">
+                  {filteredCompleted.map((progress, index) => (
+                    <ProgressBookCard
+                      key={progress.bookId}
+                      progress={progress}
+                      animationDelay={`${0.05 * index}s`}
+                    />
+                  ))}
                 </div>
               )}
             </>
@@ -697,7 +707,6 @@ export default function LibraryPage() {
                           {/* Mini cover */}
                           <div className="w-10 h-[52px] rounded-lg overflow-hidden shrink-0 shadow-sm">
                             <BookCover
-                              coverUrl={entry.coverUrl}
                               bookId={entry.bookId}
                               title={entry.title}
                             />
