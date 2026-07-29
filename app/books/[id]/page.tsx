@@ -788,7 +788,20 @@ export default function BookDetailPage() {
                       })}
                     </div>
                     <span className="text-base">
-                      by <span className="font-semibold text-[#1A1A1A] dark:text-white">{displayAuthors}</span>
+                      by{" "}
+                      <span className="font-semibold text-[#1A1A1A] dark:text-white">
+                        {allAuthors.map((author, index) => (
+                          <span key={author.id}>
+                            {index > 0 && ", "}
+                            <Link
+                              href={`/authors/${author.id}`}
+                              className="transition-colors hover:text-[#20659C] hover:underline dark:hover:text-[#55B9EA]"
+                            >
+                              {author.name}
+                            </Link>
+                          </span>
+                        ))}
+                      </span>
                     </span>
                   </div>
                 )}
@@ -1034,7 +1047,11 @@ export default function BookDetailPage() {
                       const isPrimary = (author as { isPrimaryAuthor?: boolean }).isPrimaryAuthor;
                       const initials = author.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
                       return (
-                        <div key={author.id} className="group relative">
+                        <Link
+                          key={author.id}
+                          href={`/authors/${author.id}`}
+                          className="group relative block"
+                        >
                           <div className="absolute -inset-px bg-gradient-to-r from-[#20659C] to-[#55B9EA] rounded-xl opacity-0 group-hover:opacity-20 blur-sm transition-all duration-300" />
                           <div className="relative flex items-center gap-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 border border-[#E2E8F0]/60 dark:border-gray-800/60 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md">
                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#20659C] to-[#55B9EA] flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-md">
@@ -1052,7 +1069,7 @@ export default function BookDetailPage() {
                               )}
                             </div>
                           </div>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
