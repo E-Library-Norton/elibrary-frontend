@@ -1,11 +1,28 @@
 import Link from "next/link";
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from "lucide-react";
+import {
+  ExternalLink,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Twitter,
+  Youtube,
+} from "lucide-react";
+
+const INTERNATIONAL_LIBRARIES = [
+  { label: "IMF e-Library", href: "https://www.elibrary.imf.org/" },
+  { label: "OAPEN Library", href: "https://library.oapen.org/" },
+  { label: "CORE Research", href: "https://core.ac.uk/" },
+  { label: "Open Library", href: "https://openlibrary.org/" },
+  { label: "Project Gutenberg", href: "https://www.gutenberg.org/" },
+] as const;
 
 export default function Footer() {
   return (
     <footer className="bg-[#F8FAFC] dark:bg-gray-900 text-[#1A1A1A] dark:text-white border-t border-[#E2E8F0] dark:border-transparent">
       {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1.3fr_0.8fr_0.9fr_1.05fr_1.1fr] gap-10 xl:gap-8">
         {/* Brand */}
         <div className="space-y-4">
           <Link href="/" className="flex items-center gap-2">
@@ -85,6 +102,30 @@ export default function Footer() {
                   <span className="w-1 h-1 rounded-full bg-[#20659C] flex-shrink-0" />
                   {cat}
                 </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* International libraries */}
+        <div>
+          <h3 className="font-semibold text-[#20659C] mb-4 text-sm uppercase tracking-wider">
+            International Libraries
+          </h3>
+          <ul className="space-y-2.5">
+            {INTERNATIONAL_LIBRARIES.map((resource) => (
+              <li key={resource.href}>
+                <a
+                  href={resource.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-1.5 text-sm text-[#5E5E5E] transition-colors hover:text-[#20659C] dark:text-gray-400 dark:hover:text-white"
+                >
+                  <span className="h-1 w-1 flex-shrink-0 rounded-full bg-[#20659C]" />
+                  <span>{resource.label}</span>
+                  <ExternalLink className="h-3 w-3 opacity-50 transition-opacity group-hover:opacity-100" />
+                  <span className="sr-only">(opens in a new tab)</span>
+                </a>
               </li>
             ))}
           </ul>
