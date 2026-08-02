@@ -1,8 +1,8 @@
 # Norton E-Library Student Frontend
 
-> Last updated: June 3, 2026
+> Last updated: August 2, 2026
 
-This is the public student-facing web app for Norton E-Library. It is a Next.js App Router application that lets students browse books, read PDFs online, download authenticated files, manage their profile, submit reviews and feedback, and receive push notifications.
+This is the public student-facing web app for Norton E-Library. It is a Next.js App Router application that lets students browse books and authors, consume PDF/video/audio materials, download authenticated files, manage their profile and library, save reading progress/bookmarks/notes, submit reviews and feedback, and receive push notifications.
 
 ## Stack
 
@@ -19,7 +19,7 @@ This is the public student-facing web app for Norton E-Library. It is a Next.js 
 ## Local Setup
 
 ```bash
-cd frontend
+cd elibrary-frontend
 npm install
 cp .env.example .env.local
 npm run dev
@@ -59,10 +59,12 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 | `/` | Home page with hero, featured books, videos, audios, stats, categories, testimonials, and CTA |
 | `/books` | Public catalog with search, filters, sorting, and pagination |
 | `/books/[id]` | Book detail, metadata, reviews, media links, share modal, and actions |
-| `/books/[id]/read` | In-browser PDF reader |
+| `/books/[id]/read` | PDF reader with server-synced progress, page bookmarks, highlights, and notes |
+| `/authors` | Public author directory |
+| `/authors/[authorId]` | Author profile and authored books |
 | `/videos` | Video materials |
 | `/audios` | Audio materials |
-| `/library` | Personal library, favorites, history, and reading progress |
+| `/library` | Local favorites/history plus server-backed Reading and Completed collections |
 | `/profile` | Profile editing, avatar upload, and password change |
 | `/auth/signin` | Email, username, or student ID login |
 | `/auth/signup` | Student registration |
@@ -80,11 +82,16 @@ The browser talks to same-origin Next.js routes under `/api`. Those routes forwa
 |---|---|
 | `/api/auth/*` | `/api/auth/*` |
 | `/api/books` and `/api/books/[id]/*` | `/api/books/*` |
+| `/api/books/[id]/reading-progress` | `/api/books/:id/reading-progress` |
+| `/api/books/[id]/bookmarks/*` | `/api/books/:id/bookmarks/*` |
+| `/api/books/[id]/notes/*` | `/api/books/:id/notes/*` |
+| `/api/library/reading-progress` | `/api/library/reading-progress` |
 | `/api/categories` | `/api/categories` |
 | `/api/stats` | `/api/stats/public` |
 | `/api/reviews/*` | `/api/reviews/*` and `/api/books/:id/reviews` |
 | `/api/feedback/*` | `/api/feedback/*` |
 | `/api/push/*` | `/api/push/*` |
+| `/api/users/[id]/avatar` | `/api/users/:id/avatar` |
 
 ## State And Data Flow
 
@@ -94,16 +101,18 @@ The browser talks to same-origin Next.js routes under `/api`. Those routes forwa
 - `reviewApi.ts` handles book reviews, public reviews, and the current user's reviews.
 - `feedbackApi.ts` handles public feedback submission and public testimonials.
 - `pushApi.ts` handles VAPID key lookup, subscribe, and unsubscribe.
-- `librarySlice.ts` keeps favorites, history, reading progress, and local library state.
+- `readingApi.ts` synchronizes reading progress, page bookmarks, reading notes, and the Reading/Completed library with PostgreSQL.
+- `librarySlice.ts` keeps per-user local favorites, recent history, reading time, and a resilience fallback for page progress.
 - `SocketProvider.tsx` connects to the backend Socket.IO server for realtime events.
 
 ## Media And SEO
 
 - Book covers, PDFs, videos, audio files, and avatars are served through backend R2 helpers and signed URL endpoints.
-- The reader page uses dynamic PDF imports to avoid SSR issues with browser-only PDF.js APIs.
+- The reader page uses dynamic PDF imports to avoid SSR issues with browser-only PDF.js APIs and debounces progress writes to the backend.
 - The book detail share modal renders a local SVG QR code with `react-qr-code` for the stable `/books/[id]` URL, plus Twitter, Facebook, Telegram, and copy-link actions.
+- Completed books expose citation generation in APA, MLA, Chicago, and IEEE formats.
 - `app/sitemap.xml/route.ts`, `app/robots.txt/route.ts`, `app/og/route.tsx`, `BookSchema`, and `lib/seo.ts` cover sitemap, robots, Open Graph, and structured data.
 
 ## Deployment
 
-Deploy on Vercel from the `frontend` folder. Set the same environment variables listed above in Vercel Project Settings. The production API URL must include the `/api` suffix.
+Deploy on Vercel from the `elibrary-frontend` folder. Set the same environment variables listed above in Vercel Project Settings. The production API URL must include the `/api` suffix.
