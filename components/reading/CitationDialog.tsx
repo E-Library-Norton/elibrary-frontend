@@ -19,6 +19,7 @@ import {
   type CitationStyle,
 } from "@/lib/citation";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface CitationDialogProps {
   book: CitationBook;
@@ -35,6 +36,7 @@ function safeFileName(title: string) {
 }
 
 export function CitationDialog({ book }: CitationDialogProps) {
+  const t = useTranslations("Library");
   const [open, setOpen] = useState(false);
   const [style, setStyle] = useState<CitationStyle>("apa");
   const [copied, setCopied] = useState(false);
@@ -47,16 +49,18 @@ export function CitationDialog({ book }: CitationDialogProps) {
     try {
       await navigator.clipboard.writeText(citation);
       setCopied(true);
-      toast.success("Citation copied to clipboard");
+      toast.success(t("citationCopied"));
       window.setTimeout(() => setCopied(false), 1600);
     } catch {
-      toast.error("Your browser could not copy the citation");
+      toast.error(t("citationCopyFailed"));
     }
   }
 
   function downloadCitation() {
     const content = [
-      `${CITATION_STYLES.find((item) => item.value === style)?.label} citation`,
+      t("citationFileHeading", {
+        style: CITATION_STYLES.find((item) => item.value === style)?.label ?? style,
+      }),
       "",
       citation,
       book.isbn ? `\nISBN: ${book.isbn}` : "",
@@ -79,15 +83,15 @@ export function CitationDialog({ book }: CitationDialogProps) {
         className="w-full shrink-0 sm:w-auto"
       >
         <Quote className="h-4 w-4" />
-        Generate Citation
+        {t("generateCitation")}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Generate book citation</DialogTitle>
+            <DialogTitle>{t("generateBookCitation")}</DialogTitle>
             <DialogDescription>
-              Your completion unlocks citations for this book.
+              {t("citationDescription")}
             </DialogDescription>
           </DialogHeader>
 
@@ -95,7 +99,7 @@ export function CitationDialog({ book }: CitationDialogProps) {
             <div
               className="grid grid-cols-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800 sm:grid-cols-4"
               role="tablist"
-              aria-label="Citation style"
+              aria-label={t("citationStyle")}
             >
               {CITATION_STYLES.map((item) => (
                 <button
@@ -128,27 +132,27 @@ export function CitationDialog({ book }: CitationDialogProps) {
             <dl className="grid gap-2 text-xs text-slate-500 sm:grid-cols-2 dark:text-slate-400">
               <div>
                 <dt className="font-semibold text-slate-700 dark:text-slate-200">
-                  Author
+                  {t("author")}
                 </dt>
-                <dd>{book.authors.join(", ") || "Not provided"}</dd>
+                <dd>{book.authors.join(", ") || t("notProvided")}</dd>
               </div>
               <div>
                 <dt className="font-semibold text-slate-700 dark:text-slate-200">
-                  Publisher
+                  {t("publisher")}
                 </dt>
-                <dd>{book.publisher || "Not provided"}</dd>
+                <dd>{book.publisher || t("notProvided")}</dd>
               </div>
               <div>
                 <dt className="font-semibold text-slate-700 dark:text-slate-200">
-                  Publication year
+                  {t("publicationYear")}
                 </dt>
-                <dd>{book.publicationYear || "Not provided"}</dd>
+                <dd>{book.publicationYear || t("notProvided")}</dd>
               </div>
               <div>
                 <dt className="font-semibold text-slate-700 dark:text-slate-200">
                   ISBN
                 </dt>
-                <dd>{book.isbn || "Not provided"}</dd>
+                <dd>{book.isbn || t("notProvided")}</dd>
               </div>
             </dl>
           </div>
@@ -160,7 +164,7 @@ export function CitationDialog({ book }: CitationDialogProps) {
               onClick={downloadCitation}
             >
               <Download className="h-4 w-4" />
-              Download
+              {t("download")}
             </Button>
             <Button type="button" onClick={copyCitation}>
               {copied ? (
@@ -168,7 +172,7 @@ export function CitationDialog({ book }: CitationDialogProps) {
               ) : (
                 <Copy className="h-4 w-4" />
               )}
-              {copied ? "Copied" : "Copy Citation"}
+              {copied ? t("copied") : t("copyCitation")}
             </Button>
           </DialogFooter>
         </DialogContent>

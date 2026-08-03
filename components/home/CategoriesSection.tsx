@@ -21,6 +21,7 @@ import {
 import { useGetCategoriesQuery } from "@/store/api/booksApi";
 import { cn } from "@/lib/utils";
 import type { BookCategory } from "@/types";
+import { useTranslations } from "next-intl";
 
 /* ── Icon + color map per category name (fallback-safe) ─────────────────── */
 const categoryMeta: Record<
@@ -132,6 +133,7 @@ function CategorySkeleton({ index }: { index: number }) {
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
 export default function CategoriesSection() {
+  const t = useTranslations("Home");
   const { data, isLoading } = useGetCategoriesQuery();
   const categories: BookCategory[] = data?.data ?? [];
 
@@ -145,14 +147,13 @@ export default function CategoriesSection() {
         <div className="text-center mb-14 opacity-0 animate-[heroReveal_0.5s_ease_0.1s_forwards]">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#20659C]/8 dark:bg-[#20659C]/15 text-[#20659C] dark:text-[#55B9EA] text-xs font-bold uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            Explore Topics
+            {t("categoriesEyebrow")}
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">
-            Browse by Category
+            {t("categoriesTitle")}
           </h2>
           <p className="mt-3 text-[#5E5E5E] dark:text-gray-400 max-w-lg mx-auto text-base">
-            Discover resources across all academic disciplines at Norton
-            University.
+            {t("categoriesDescription")}
           </p>
         </div>
 
@@ -208,7 +209,7 @@ export default function CategoriesSection() {
                             </h3>
                             <div className="flex items-center gap-2 mt-1.5">
                               <span className="text-xs text-[#9CA3AF] font-medium">
-                                Browse collection
+                                {t("browseCollection")}
                               </span>
                               <ArrowRight className="w-3 h-3 text-[#9CA3AF] opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all duration-300" />
                             </div>
@@ -228,7 +229,7 @@ export default function CategoriesSection() {
               href="/books"
               className="inline-flex items-center gap-2 text-sm font-semibold text-[#20659C] dark:text-[#55B9EA] hover:underline underline-offset-4"
             >
-              View all {categories.length} categories
+              {t("viewAllCategories", { count: categories.length })}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

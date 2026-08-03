@@ -24,6 +24,7 @@ import {
   type LoginValues,
 } from "@/lib/auth-schemas";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 2 * 60 * 1000; // 2 minutes — mirrors backend window
@@ -44,6 +45,7 @@ function clearStoredLockout(identifier: string) {
 }
 
 function SignInPageContent() {
+  const t = useTranslations("Auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isLoginLoading } = useAuth();
@@ -146,7 +148,7 @@ function SignInPageContent() {
       const msg =
         e?.data?.error?.message ??
         e?.data?.message ??
-        "Something went wrong. Please try again.";
+        t("genericError");
       setError(msg);
     }
   };
@@ -191,22 +193,21 @@ function SignInPageContent() {
           </div>
 
           <h2 className="text-4xl font-extrabold leading-tight mb-4">
-            Welcome Back to Your Library
+            {t("welcomeBack")}
           </h2>
           <p className="text-white/70 leading-relaxed mb-10">
-            Access 15,000+ academic books, journals and research papers — all
-            in one place, free for Norton University students.
+            {t("welcomeDescription")}
           </p>
 
           {/* Feature pills */}
           <div className="flex flex-wrap justify-center gap-2">
-            {["15,000+ Books", "24/7 Access", "Free Downloads", "All Departments"].map(
-              (f) => (
+            {["booksCount", "alwaysAvailable", "freeDownloads", "allDepartments"].map(
+              (key) => (
                 <span
-                  key={f}
+                  key={key}
                   className="px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-medium text-white/90"
                 >
-                  {f}
+                  {t(key)}
                 </span>
               )
             )}
@@ -235,14 +236,14 @@ function SignInPageContent() {
 
           <div className="rounded-2xl border border-[#E2E8F0] bg-white p-8 shadow-sm dark:border-gray-700 dark:bg-gray-900/95 dark:shadow-2xl dark:shadow-black/30">
             <div className="mb-7">
-              <h1 className="text-2xl font-extrabold text-[#1A1A1A] dark:text-white">Sign In</h1>
+              <h1 className="text-2xl font-extrabold text-[#1A1A1A] dark:text-white">{t("signIn")}</h1>
               <p className="mt-1 text-sm text-[#5E5E5E] dark:text-gray-400">
-                Don&apos;t have an account?{" "}
+                {t("noAccount")} {" "}
                 <Link
                   href={signUpHref}
                   className="font-semibold text-[#20659C] transition-colors hover:text-[#55B9EA] dark:text-[#55B9EA] dark:hover:text-sky-300"
                 >
-                  Sign up free
+                  {t("signUpFree")}
                 </Link>
               </p>
             </div>
@@ -252,7 +253,7 @@ function SignInPageContent() {
               <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700 dark:border-orange-800/60 dark:bg-orange-950/40 dark:text-orange-300">
                 <Clock className="w-4 h-4 mt-0.5 shrink-0" />
                 <span>
-                  Too many failed attempts. Try again in{" "}
+                  {t("tooManyAttempts")} {" "}
                   <span className="font-semibold">
                     {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, "0")}
                   </span>.
@@ -263,7 +264,7 @@ function SignInPageContent() {
             {/* Failed-attempt warning */}
             {!isLocked && attemptCount > 0 && attemptCount < MAX_ATTEMPTS && (
               <p className="mb-4 text-center text-xs text-yellow-600 dark:text-yellow-400">
-                {MAX_ATTEMPTS - attemptCount} attempt{MAX_ATTEMPTS - attemptCount !== 1 ? "s" : ""} remaining before lockout
+                {t("attemptsRemaining", { count: MAX_ATTEMPTS - attemptCount })}
               </p>
             )}
 
@@ -279,11 +280,11 @@ function SignInPageContent() {
               {/* Identifier */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-[#1A1A1A] dark:text-gray-100">
-                  Username / Email / Student ID
+                  {t("identifierLabel")}
                 </label>
                 <Input
                   autoFocus
-                  placeholder="Enter your username, email or student ID"
+                  placeholder={t("identifierPlaceholder")}
                   value={form.identifier}
                   onChange={(e) => updateIdentifier(e.target.value)}
                   aria-invalid={Boolean(fieldErrors.identifier)}
@@ -305,19 +306,19 @@ function SignInPageContent() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-sm font-medium text-[#1A1A1A] dark:text-gray-100">
-                    Password
+                    {t("password")}
                   </label>
                   <Link
                     href="/auth/forgot-password"
                     className="text-xs text-[#20659C] transition-colors hover:text-[#55B9EA] dark:text-[#55B9EA] dark:hover:text-sky-300"
                   >
-                    Forgot password?
+                    {t("forgotPassword")}
                   </Link>
                 </div>
                 <div className="relative">
                   <Input
                     type={showPw ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder={t("passwordPlaceholder")}
                     value={form.password}
                     onChange={(e) => updatePassword(e.target.value)}
                     aria-invalid={Boolean(fieldErrors.password)}
@@ -354,15 +355,15 @@ function SignInPageContent() {
                 {isLoginLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Signing in...
+                    {t("signingIn")}
                   </>
                 ) : isLocked ? (
                   <>
                     <Clock className="w-4 h-4" />
-                    Locked — {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, "0")}
+                    {t("locked")} — {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, "0")}
                   </>
                 ) : (
-                  "Sign In"
+                  t("signIn")
                 )}
               </Button>
             </form>
@@ -370,7 +371,7 @@ function SignInPageContent() {
             {/* ── Divider ── */}
             <div className="flex items-center gap-3 my-5">
               <div className="h-px flex-1 bg-[#E2E8F0] dark:bg-gray-700" />
-              <span className="text-xs font-medium text-[#9CA3AF] dark:text-gray-400">Or continue with</span>
+              <span className="text-xs font-medium text-[#9CA3AF] dark:text-gray-400">{t("continueWith")}</span>
               <div className="h-px flex-1 bg-[#E2E8F0] dark:bg-gray-700" />
             </div>
 
@@ -417,7 +418,7 @@ function SignInPageContent() {
             </div>
 
             <p className="mt-6 text-center text-xs text-[#9CA3AF] dark:text-gray-500">
-              Copyright © 2026 E-Library. All rights reserved.
+              {t("copyright", { year: 2026 })}
             </p>
           </div>
         </div>

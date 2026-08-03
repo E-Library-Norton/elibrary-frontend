@@ -15,6 +15,7 @@ export interface User {
 export interface BookCategory {
   id: number;
   name: string;
+  nameKh?: string | null;
 }
 export interface BookAuthor {
   id: number;
@@ -31,6 +32,60 @@ export interface BookMaterialType {
 export interface BookDepartment {
   id: number;
   name: string;
+  nameKh?: string | null;
+  code?: string | null;
+}
+
+export type ReadingPurpose =
+  | "daily_study"
+  | "assignment"
+  | "thesis"
+  | "research"
+  | "exam_preparation"
+  | "skill_development"
+  | "general_reading";
+
+export type PreferredLanguage = "km" | "en" | "fr" | "other";
+
+export interface ReadingPreference {
+  id: number;
+  userId: number;
+  departmentId: number | null;
+  readingPurposes: ReadingPurpose[];
+  preferredCategoryIds: number[];
+  preferredLanguages: PreferredLanguage[];
+  onboardingCompleted: boolean;
+  completedAt: string | null;
+  Department?: BookDepartment | null;
+  Categories: BookCategory[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReadingPreferenceInput {
+  departmentId: number | null;
+  readingPurposes: ReadingPurpose[];
+  preferredCategoryIds: number[];
+  preferredLanguages: PreferredLanguage[];
+  onboardingCompleted: boolean;
+}
+
+export interface RecommendedBook extends Book {
+  recommendationScore: number;
+  recommendationReasons: string[];
+}
+
+export interface RecommendationData {
+  reason: {
+    department: string;
+    purposes: string[];
+    categories: string[];
+  };
+  books: RecommendedBook[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface Book {

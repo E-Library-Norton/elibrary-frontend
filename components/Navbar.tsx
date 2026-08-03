@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Menu,
   X,
@@ -17,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 import { PushNotificationBell } from "@/components/PushNotificationBell";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks";
 import {
   selectFavoriteCount,
@@ -25,13 +28,13 @@ import {
 } from "@/store/slices/librarySlice";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/books", label: "Books" },
-  { href: "/videos", label: "Videos" },
-  { href: "/audios", label: "Audios" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+  { href: "/", labelKey: "home" },
+  { href: "/books", labelKey: "books" },
+  { href: "/videos", labelKey: "videos" },
+  { href: "/audios", labelKey: "audios" },
+  { href: "/about", labelKey: "about" },
+  { href: "/contact", labelKey: "contact" },
+] as const;
 
 function getInitials(firstName?: string, lastName?: string, username?: string) {
   if (firstName && lastName) return (firstName[0] + lastName[0]).toUpperCase();
@@ -41,7 +44,12 @@ function getInitials(firstName?: string, lastName?: string, username?: string) {
 }
 
 // ── User Avatar + Dropdown 
-function UserMenu() {
+function UserMenu({
+  pathname,
+}: {
+  pathname: string;
+}) {
+  const t = useTranslations("Navbar");
   const { user, logout, isLogoutLoading } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -58,7 +66,7 @@ function UserMenu() {
   const displayName =
     user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
-      : user?.username ?? "Account";
+      : user?.username ?? t("account");
   const roles = user?.roles ?? [];
   const roleLabel = roles[0] ?? "";
   const avatarSrc = user?.avatar ? '/api/auth/avatar' : null;
@@ -67,7 +75,7 @@ function UserMenu() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-[#20659C]/8 transition-colors"
+        className="flex items-center gap-2 rounded-xl px-2 py-1.5 font-sans transition-colors hover:bg-[#20659C]/8"
       >
         {/* Avatar */}
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#20659C] to-[#55B9EA] flex items-center justify-center text-white text-xs font-bold shrink-0 ring-2 ring-white shadow-sm">
@@ -82,10 +90,10 @@ function UserMenu() {
             initials
           )}
         </div>
-        <div className="hidden sm:block text-left">
-          <p className="text-sm font-semibold text-[#1A1A1A] dark:text-white leading-none">{displayName}</p>
+        <div className="hidden text-left xl:block">
+          <p className="max-w-[170px] truncate font-sans text-sm font-semibold leading-none text-[#1A1A1A] dark:text-white">{displayName}</p>
           {roleLabel && (
-            <p className="text-xs text-[#9CA3AF] leading-none mt-0.5 capitalize">{roleLabel}</p>
+            <p className="mt-1 max-w-[170px] truncate font-sans text-xs capitalize leading-none text-[#9CA3AF] dark:text-gray-400">{roleLabel}</p>
           )}
         </div>
         <ChevronDown
@@ -119,10 +127,15 @@ function UserMenu() {
           <Link
             href="/library"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#5E5E5E] dark:text-gray-400 hover:bg-[#F8FAFC] dark:hover:bg-gray-800 hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors"
+            className={cn(
+              "flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
+              pathname === "/library"
+                ? "bg-[#20659C]/8 text-[#20659C] dark:bg-[#20659C]/20 dark:text-[#55B9EA]"
+                : "text-[#5E5E5E] hover:bg-[#F8FAFC] hover:text-[#20659C] dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-[#55B9EA]",
+            )}
           >
-            <BookOpen className="w-4 h-4" />
-            My Library
+            <BookOpen className="h-4 w-4" />
+            <span>{t("myLibrary")}</span>
           </Link>
           <Link
             href="/profile"
@@ -130,7 +143,7 @@ function UserMenu() {
             className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#5E5E5E] dark:text-gray-400 hover:bg-[#F8FAFC] dark:hover:bg-gray-800 hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors"
           >
             <User className="w-4 h-4" />
-            My Profile
+            {t("myProfile")}
           </Link>
         </div>
 
@@ -144,7 +157,7 @@ function UserMenu() {
             className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
           >
             <LogOut className="w-4 h-4" />
-            {isLogoutLoading ? "Signing out…" : "Sign Out"}
+            {isLogoutLoading ? t("signingOut") : t("signOut")}
           </button>
         </div>
       </div>
@@ -155,6 +168,7 @@ function UserMenu() {
 // ── Main Navbar
 
 export default function Navbar() {
+  const t = useTranslations("Navbar");
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
@@ -165,7 +179,7 @@ export default function Navbar() {
   const displayName =
     user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
-      : user?.username ?? "Account";
+      : user?.username ?? t("account");
 
   // Hydrate per-user library data whenever the logged-in user changes
   useEffect(() => {
@@ -185,37 +199,44 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        "fixed inset-x-0 top-0 z-50 border-b border-slate-200/70 bg-white/90 font-sans backdrop-blur-md transition-shadow duration-300 dark:border-slate-800/80 dark:bg-slate-950/90",
         scrolled
-          ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-md border-b border-[#E2E8F0] dark:border-gray-800"
-          : "bg-transparent"
+          ? "shadow-md shadow-slate-900/5 dark:shadow-black/20"
+          : "shadow-none"
       )}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-lg overflow-hidden">
-            <img src="/logo.webp" alt="E-Library Norton" width={40} height={40} className="w-full h-full object-contain" />
+        <Link href="/" onClick={() => setOpen(false)} className="group flex items-center gap-2 font-sans">
+          <div className="h-9 w-9 overflow-hidden rounded-lg">
+            <Image
+              src="/logo.webp"
+              alt="E-Library Norton"
+              width={40}
+              height={40}
+              priority
+              className="h-full w-full object-contain"
+            />
           </div>
-          <span className="text-xl font-bold text-[#20659C] group-hover:text-[#55B9EA] transition-colors">
+          <span className="text-lg font-bold tracking-tight text-[#20659C] transition-colors group-hover:text-[#55B9EA] sm:text-xl">
             E-Library<span className="text-[#DF900A]"> Norton</span>
           </span>
         </Link>
 
         {/* Desktop Nav */}
-        <ul className="hidden md:flex items-center gap-1">
+        <ul className="hidden items-center gap-0.5 font-sans lg:flex">
           {navLinks.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
                 className={cn(
-                  "relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  "relative rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-200 xl:px-3",
                   pathname === link.href
                     ? "text-[#20659C] bg-[#20659C]/8 dark:bg-[#20659C]/20"
                     : "text-[#5E5E5E] dark:text-gray-400 hover:text-[#20659C] dark:hover:text-[#55B9EA] hover:bg-[#20659C]/5"
                 )}
               >
-                {link.label}
+                {t(link.labelKey)}
                 {pathname === link.href && (
                   <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#20659C]" />
                 )}
@@ -225,48 +246,63 @@ export default function Navbar() {
         </ul>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-2">
-          <AnimatedThemeToggler />
+        <div className="hidden items-center gap-1 lg:flex">
+          <LanguageSwitcher />
+          <AnimatedThemeToggler useViewTransition={pathname !== "/"} />
 
           {/* Push notification toggle */}
           {isAuthenticated && <PushNotificationBell />}
 
-          {/* Favorites indicator */}
-          <Link
-            href="/library"
-            className="relative p-2 rounded-lg text-[#5E5E5E] dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            title="My Library"
-          >
-            <Heart className={cn("w-5 h-5", favCount > 0 && "fill-red-500 text-red-500")} />
-            {favCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1 shadow-sm">
-                {favCount > 99 ? "99+" : favCount}
-              </span>
-            )}
-          </Link>
+          {/* Compact saved-books shortcut */}
+          {isAuthenticated && (
+            <Link
+              href="/library"
+              aria-label={t("myLibrary")}
+              title={t("myLibrary")}
+              className={cn(
+                "relative inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                pathname === "/library"
+                  ? "bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-400"
+                  : "text-[#5E5E5E] hover:bg-red-50 hover:text-red-500 dark:text-gray-400 dark:hover:bg-red-950/30 dark:hover:text-red-400",
+              )}
+            >
+              <Heart
+                className={cn(
+                  "h-5 w-5",
+                  favCount > 0 && "fill-red-500 text-red-500",
+                )}
+              />
+              {favCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[9px] font-bold leading-none text-white dark:border-slate-950">
+                  {favCount > 99 ? "99+" : favCount}
+                </span>
+              )}
+            </Link>
+          )}
 
           {isAuthenticated ? (
-            <UserMenu />
+            <UserMenu pathname={pathname} />
           ) : (
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" asChild>
-                <Link href="/auth/signin">Sign In</Link>
+                <Link href="/auth/signin">{t("signIn")}</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/auth/signup">Sign Up</Link>
+                <Link href="/auth/signup">{t("signUp")}</Link>
               </Button>
             </div>
           )}
         </div>
 
         {/* Mobile Toggle + Theme */}
-        <div className="md:hidden flex items-center gap-1">
-          <AnimatedThemeToggler />
+        <div className="flex items-center gap-1 lg:hidden">
+          <LanguageSwitcher className="h-8 w-[76px]" />
+          <AnimatedThemeToggler useViewTransition={pathname !== "/"} />
           {isAuthenticated && <PushNotificationBell />}
           <button
             className="p-2 rounded-lg text-[#5E5E5E] dark:text-gray-400 hover:bg-[#20659C]/10 dark:hover:bg-gray-800 hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors"
             onClick={() => setOpen(!open)}
-            aria-label="Toggle menu"
+            aria-label={t("toggleMenu")}
           >
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -276,7 +312,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <div
         className={cn(
-          "md:hidden transition-all duration-300 bg-white dark:bg-gray-900 border-t border-[#E2E8F0] dark:border-gray-800",
+          "border-t border-[#E2E8F0] bg-white transition-all duration-300 dark:border-gray-800 dark:bg-gray-900 lg:hidden",
           open ? "max-h-[600px] opacity-100 overflow-y-auto" : "max-h-0 opacity-0 overflow-hidden"
         )}
       >
@@ -293,7 +329,7 @@ export default function Navbar() {
                   : "text-[#5E5E5E] dark:text-gray-400 hover:bg-[#20659C]/10 hover:text-[#20659C] dark:hover:text-[#55B9EA]"
               )}
             >
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
 
@@ -319,7 +355,7 @@ export default function Navbar() {
                   className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-[#5E5E5E] dark:text-gray-400 hover:bg-[#20659C]/10 dark:hover:bg-gray-800 hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors"
                 >
                   <Heart className={cn("w-4 h-4", favCount > 0 && "fill-red-500 text-red-500")} />
-                  My Library
+                  {t("myLibrary")}
                   {favCount > 0 && (
                     <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1.5">
                       {favCount}
@@ -332,7 +368,7 @@ export default function Navbar() {
                   className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-[#5E5E5E] dark:text-gray-400 hover:bg-[#20659C]/10 dark:hover:bg-gray-800 hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors"
                 >
                   <User className="w-4 h-4" />
-                  My Profile
+                  {t("myProfile")}
                 </Link>
                 <button
                   onClick={() => {
@@ -342,19 +378,19 @@ export default function Navbar() {
                   className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
-                  Sign Out
+                  {t("signOut")}
                 </button>
               </>
             ) : (
               <>
                 <Button variant="outline" className="w-full mb-2" asChild>
                   <Link href="/auth/signin" onClick={() => setOpen(false)}>
-                    Sign In
+                    {t("signIn")}
                   </Link>
                 </Button>
                 <Button className="w-full" asChild>
                   <Link href="/auth/signup" onClick={() => setOpen(false)}>
-                    Sign Up
+                    {t("signUp")}
                   </Link>
                 </Button>
               </>

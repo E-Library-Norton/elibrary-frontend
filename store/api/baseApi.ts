@@ -58,6 +58,9 @@ export const baseApi = createApi({
     "Bookmark",
     "ReadingNote",
     "ReadingLibrary",
+    "Preferences",
+    "Recommendations",
+    "Departments",
   ],
   endpoints: () => ({}),
 });

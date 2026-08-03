@@ -6,6 +6,7 @@ import { Marquee } from "@/components/ui/marquee";
 import { cn } from "@/lib/utils";
 import { useGetPublicReviewsQuery } from "@/store/api/reviewApi";
 import type { PublicReview } from "@/store/api/reviewApi";
+import { useTranslations } from "next-intl";
 
 // ── Color palette for avatars 
 const COLORS = [
@@ -169,12 +170,18 @@ function ReviewCardSkeleton() {
 
 // ── Main section 
 export default function TestimonialsSection() {
+  const t = useTranslations("Home");
   const { data, isLoading } = useGetPublicReviewsQuery({ limit: 50 });
 
-  const testimonials: Testimonial[] =
+  const sourceTestimonials: Testimonial[] =
     data?.data && data.data.length > 0
       ? data.data.map(mapReview)
       : fallbackTestimonials;
+  const testimonials = sourceTestimonials.map((testimonial) => ({
+    ...testimonial,
+    name: testimonial.name === "Anonymous" ? t("anonymous") : testimonial.name,
+    role: testimonial.role === "Student" ? t("student") : testimonial.role,
+  }));
 
   // Ensure enough items for two rows by repeating if needed
   const ensure = (min: number): Testimonial[] => {
@@ -199,13 +206,13 @@ export default function TestimonialsSection() {
         <div className="text-center mb-12 opacity-0 animate-[heroReveal_0.5s_ease_0.1s_forwards]">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#DF900A]/10 text-[#DF900A] text-xs font-bold uppercase tracking-wider mb-3">
             <Quote className="w-3.5 h-3.5" />
-            Reader Reviews
+            {t("reviewsEyebrow")}
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">
-            Loved by students across campus
+            {t("reviewsTitle")}
           </h2>
           <p className="mt-2 text-[#5E5E5E] dark:text-gray-400 max-w-md mx-auto text-base">
-            Here&apos;s what Norton University students are saying about their library experience.
+            {t("reviewsDescription")}
           </p>
         </div>
       </div>

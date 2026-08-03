@@ -27,16 +27,17 @@ import { useGetCategoriesQuery } from "@/store/api/booksApi";
 import { StarRating } from "@/components/ui/star-rating";
 import { useCatalogUrlState } from "@/hooks/useCatalogUrlState";
 import { withCatalogReturnHref } from "@/lib/catalog-navigation";
+import { useTranslations } from "next-intl";
 
 const LIMIT = 12;
 
 const sortOptions = [
-  { value: "created_at", label: "Newest First", order: "DESC" },
-  { value: "title", label: "Title A–Z", order: "ASC" },
-  { value: "views", label: "Most Viewed", order: "DESC" },
-  { value: "review_count", label: "Most Reviewed", order: "DESC" },
-  { value: "downloads", label: "Most Downloaded", order: "DESC" },
-];
+  { value: "created_at", labelKey: "newest", order: "DESC" },
+  { value: "title", labelKey: "titleAscending", order: "ASC" },
+  { value: "views", labelKey: "mostViewed", order: "DESC" },
+  { value: "review_count", labelKey: "mostReviewed", order: "DESC" },
+  { value: "downloads", labelKey: "mostDownloaded", order: "DESC" },
+] as const;
 
 // ── Cover
 function AudioCover({
@@ -83,6 +84,7 @@ function SkeletonCard() {
 
 // ═════════════════════════════════════════════════════════════════════════════
 function AudiosPageContent() {
+  const t = useTranslations("Catalog");
   const {
     search,
     categoryId,
@@ -168,17 +170,17 @@ function AudiosPageContent() {
           <div className="mb-6">
             <div className="inline-flex items-center gap-2 bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] rounded-full px-4 py-1.5 text-sm font-medium text-white/90">
               <Headphones className="w-3.5 h-3.5 text-amber-300" />
-              Audio Library
+              {t("audiosEyebrow")}
             </div>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-4">
-            Listen &{" "}
+            {t("audiosTitle")}{" "}
             <span className="bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 bg-clip-text text-transparent">
-              Learn
+              {t("audiosTitleHighlight")}
             </span>
           </h1>
           <p className="text-base sm:text-lg text-white/55 max-w-xl mx-auto mb-8">
-            Audiobooks and narration for learning on the go.
+            {t("audiosDescription")}
           </p>
 
           {/* Search */}
@@ -194,7 +196,7 @@ function AudiosPageContent() {
                       pushQuery({ search: searchInput.trim() || null, page: null });
                     }
                   }}
-                  placeholder="Search audiobooks…"
+                  placeholder={t("audiosSearchPlaceholder")}
                   className="pl-10 h-11 bg-transparent text-white placeholder:text-white/35 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
@@ -203,7 +205,7 @@ function AudiosPageContent() {
                 className="bg-amber-600 hover:bg-amber-500 text-white rounded-xl px-6 h-11 font-semibold"
                 onClick={() => pushQuery({ search: searchInput.trim() || null, page: null })}
               >
-                Search
+                {t("search")}
               </Button>
             </div>
           </div>
@@ -225,7 +227,7 @@ function AudiosPageContent() {
             {showFilter && (
               <button
                 type="button"
-                aria-label="Close filters"
+                aria-label={t("closeFilters")}
                 className="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm lg:hidden"
                 onClick={() => setShowFilter(false)}
               />
@@ -239,13 +241,13 @@ function AudiosPageContent() {
               )}
             >
               <div className="mb-2 flex items-center justify-between px-1 lg:hidden">
-                <span className="text-sm font-bold text-[#1A1A1A] dark:text-white">Filters</span>
+                <span className="text-sm font-bold text-[#1A1A1A] dark:text-white">{t("filters")}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0"
                   onClick={() => setShowFilter(false)}
-                  aria-label="Close filters"
+                  aria-label={t("closeFilters")}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -254,7 +256,7 @@ function AudiosPageContent() {
               <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-amber-100/60 dark:border-gray-800/60 p-5 shadow-sm">
                 <h3 className="font-bold text-[#1A1A1A] dark:text-white mb-4 text-sm flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-amber-600" />
-                  Categories
+                  {t("categories")}
                 </h3>
                 <ul className="space-y-1">
                   <li>
@@ -263,7 +265,7 @@ function AudiosPageContent() {
                       className={cn("w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
                         !categoryId ? "bg-amber-600 text-white font-semibold" : "text-[#5E5E5E] dark:text-gray-400 hover:bg-amber-600/10 hover:text-amber-700"
                       )}
-                    >All</button>
+                    >{t("all")}</button>
                   </li>
                   {categories.map((cat) => (
                     <li key={cat.id}>
@@ -282,7 +284,7 @@ function AudiosPageContent() {
               <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-amber-100/60 dark:border-gray-800/60 p-5 shadow-sm">
                 <h3 className="font-bold text-[#1A1A1A] dark:text-white mb-4 text-sm flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-orange-500" />
-                  Sort By
+                  {t("sortBy")}
                 </h3>
                 <div className="space-y-1">
                   {sortOptions.map((opt) => (
@@ -292,7 +294,7 @@ function AudiosPageContent() {
                       className={cn("w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
                         sortOpt === opt ? "bg-amber-600/10 text-amber-700 dark:text-amber-300 font-semibold" : "text-[#5E5E5E] dark:text-gray-400 hover:bg-amber-600/5"
                       )}
-                    >{opt.label}</button>
+                    >{t(opt.labelKey)}</button>
                   ))}
                 </div>
               </div>
@@ -305,20 +307,20 @@ function AudiosPageContent() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <Button variant="outline" size="sm" className="lg:hidden gap-1.5" onClick={() => setShowFilter(!showFilter)}>
                     {showFilter ? <X className="w-4 h-4" /> : <Filter className="w-4 h-4" />}
-                    {showFilter ? "Hide" : "Filters"}
+                    {showFilter ? t("hideFilters") : t("filters")}
                   </Button>
 
                   {isLoading ? (
-                    <span className="text-sm text-[#9CA3AF]">Loading…</span>
+                    <span className="text-sm text-[#9CA3AF]">{t("loading")}</span>
                   ) : (
                     <span className="text-sm text-[#5E5E5E] dark:text-gray-400">
-                      <span className="font-semibold text-[#1A1A1A] dark:text-white">{total}</span> audiobook{total !== 1 ? "s" : ""} found
+                      {t("audiosFound", { count: total })}
                     </span>
                   )}
 
                   {hasFilters && (
                     <Button variant="ghost" size="sm" onClick={clearFilters} className="text-red-500 hover:text-red-600 gap-1 h-7 px-2">
-                      <X className="w-3 h-3" /> Clear
+                      <X className="w-3 h-3" /> {t("clear")}
                     </Button>
                   )}
                   {categoryId && categories.find((c) => String(c.id) === categoryId) && (
@@ -342,13 +344,13 @@ function AudiosPageContent() {
               {isError && !isLoading && (
                 <div className="flex items-center gap-3 p-5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 mb-6">
                   <AlertCircle className="w-5 h-5 shrink-0" />
-                  <p className="text-sm">Failed to load audiobooks. Please check your connection.</p>
+                  <p className="text-sm">{t("audiosLoadError")}</p>
                 </div>
               )}
 
               {isFetching && !isLoading && (
                 <div className="flex items-center gap-2 text-xs text-[#9CA3AF] mb-3">
-                  <Loader2 className="w-3 h-3 animate-spin" /> Updating…
+                  <Loader2 className="w-3 h-3 animate-spin" /> {t("updating")}
                 </div>
               )}
 
@@ -360,8 +362,8 @@ function AudiosPageContent() {
               ) : filtered.length === 0 ? (
                 <div className="text-center py-20">
                   <Headphones className="w-16 h-16 text-amber-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-[#1A1A1A] dark:text-white mb-2">No audiobooks found</h3>
-                  <p className="text-[#5E5E5E] dark:text-gray-400">Try adjusting your search or filters.</p>
+                  <h3 className="text-xl font-bold text-[#1A1A1A] dark:text-white mb-2">{t("audiosEmpty")}</h3>
+                  <p className="text-[#5E5E5E] dark:text-gray-400">{t("emptyDescription")}</p>
                 </div>
               ) : view === "grid" ? (
                 <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -390,7 +392,7 @@ function AudiosPageContent() {
                             </div>
                             {/* Badge */}
                             <div className="absolute bottom-3 left-3 flex gap-2">
-                              <Badge className="bg-amber-600 text-white border-0 text-[10px] font-bold">AUDIO</Badge>
+                              <Badge className="bg-amber-600 text-white border-0 text-[10px] font-bold">{t("audioBadge")}</Badge>
                               {book.Category && (
                                 <Badge className="bg-white/90 dark:bg-gray-900/90 text-amber-700 dark:text-amber-300 border-0 text-[10px] font-semibold">
                                   {book.Category.name}
@@ -520,11 +522,12 @@ function AudiosPageContent() {
 }
 
 export default function AudiosPage() {
+  const t = useTranslations("Catalog");
   return (
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-gray-950">
-          <Loader2 className="h-8 w-8 animate-spin text-amber-600" aria-label="Loading audios" />
+          <Loader2 className="h-8 w-8 animate-spin text-amber-600" aria-label={t("audiosLoadingLabel")} />
         </div>
       }
     >

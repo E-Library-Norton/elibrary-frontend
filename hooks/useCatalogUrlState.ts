@@ -5,7 +5,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 export interface CatalogSortOption {
   value: string;
-  label: string;
   order: string;
 }
 

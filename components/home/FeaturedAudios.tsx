@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useGetBooksQuery } from "@/store/api/booksApi";
 import type { Book } from "@/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 function AudioCover({
   coverUrl,
@@ -61,6 +62,7 @@ function SkeletonCard({ index }: { index: number }) {
 }
 
 export default function FeaturedAudios() {
+  const t = useTranslations("Home");
   const { data, isLoading } = useGetBooksQuery({
     limit: 6,
     hasAudio: "true",
@@ -78,18 +80,18 @@ export default function FeaturedAudios() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600 text-xs font-bold uppercase tracking-wider mb-3">
               <Headphones className="w-3.5 h-3.5" />
-              Audio Library
+              {t("audiosEyebrow")}
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">
-              Listen & Learn
+              {t("audiosTitle")}
             </h2>
             <p className="mt-2 text-[#5E5E5E] dark:text-gray-400 max-w-md text-base">
-              Audiobooks and narration for learning on the go.
+              {t("audiosDescription")}
             </p>
           </div>
           <Button variant="outline" asChild className="rounded-xl border-amber-200 hover:bg-amber-50">
             <Link href="/audios">
-              View All Audio <ArrowRight className="w-4 h-4 ml-2" />
+              {t("viewAllAudios")} <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </Button>
         </div>
@@ -116,7 +118,7 @@ export default function FeaturedAudios() {
                     </div>
                     <div className="absolute bottom-3 left-3 flex gap-2">
                        <Badge className="bg-amber-600 text-white border-0 text-[10px] font-bold">
-                          AUDIO
+                          {t("audio")}
                        </Badge>
                     </div>
                   </div>
@@ -141,7 +143,7 @@ export default function FeaturedAudios() {
                         </span>
                       </div>
                       <span className="text-xs font-bold text-amber-600 flex items-center gap-1">
-                        Listen Now <ArrowRight className="w-3 h-3" />
+                        {t("listenNow")} <ArrowRight className="w-3 h-3" />
                       </span>
                     </div>
                   </div>

@@ -38,6 +38,7 @@ import { useGetReadingLibraryQuery } from "@/store/api/readingApi";
 import { ReadingProgressBar } from "@/components/reading/ReadingProgressBar";
 import { ContinueReadingButton } from "@/components/reading/ContinueReadingButton";
 import { CitationDialog } from "@/components/reading/CitationDialog";
+import { useLocale, useTranslations } from "next-intl";
 
 interface LibraryProgressView {
   bookId: number;
@@ -176,6 +177,7 @@ function EmptyState({
   title: string;
   description: string;
 }) {
+  const t = useTranslations("Library");
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="w-16 h-16 rounded-2xl bg-[#F8FAFC] dark:bg-gray-800 flex items-center justify-center mb-4">
@@ -189,7 +191,7 @@ function EmptyState({
       </p>
       <Button asChild className="gap-2 bg-[#20659C] hover:bg-[#55B9EA]">
         <Link href="/books">
-          <Search className="w-4 h-4" /> Browse Books
+          <Search className="w-4 h-4" /> {t("browseBooks")}
         </Link>
       </Button>
     </div>
@@ -203,6 +205,7 @@ function ProgressBookCard({
   progress: LibraryProgressView;
   animationDelay: string;
 }) {
+  const t = useTranslations("Library");
   const isCompleted =
     Boolean(progress.completedAt) ||
     (progress.totalPages > 0 &&
@@ -232,7 +235,7 @@ function ProgressBookCard({
               {isCompleted && (
                 <Badge className="border-0 bg-emerald-500 text-[10px] text-white">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
-                  Completed
+                  {t("completed")}
                 </Badge>
               )}
               {progress.category && (
@@ -252,13 +255,11 @@ function ProgressBookCard({
             <div className="mt-2 flex flex-wrap gap-3 text-xs text-[#5E5E5E] dark:text-gray-400">
               <span className="flex items-center gap-1">
                 <Bookmark className="h-3.5 w-3.5" />
-                {progress.bookmarkCount} bookmark
-                {progress.bookmarkCount === 1 ? "" : "s"}
+                {t("bookmarkCount", { count: progress.bookmarkCount })}
               </span>
               <span className="flex items-center gap-1">
                 <StickyNote className="h-3.5 w-3.5" />
-                {progress.noteCount} note
-                {progress.noteCount === 1 ? "" : "s"}
+                {t("noteCount", { count: progress.noteCount })}
               </span>
             </div>
           </div>
@@ -291,6 +292,8 @@ function ProgressBookCard({
    LIBRARY DASHBOARD PAGE
    ═══════════════════════════════════════════════ */
 export default function LibraryPage() {
+  const t = useTranslations("Library");
+  const locale = useLocale();
   const router = useRouter();
   const { user, isAuthenticated, isAuthLoading } = useAuth();
   const dispatch = useAppDispatch();
@@ -335,13 +338,13 @@ export default function LibraryPage() {
         dispatch(
           updateReadingProgress({
             ...prog,
-            title: book.title ?? `Book #${prog.bookId}`,
+            title: book.title ?? t("bookNumber", { id: prog.bookId }),
             coverUrl: book.coverUrl ?? null,
           })
         );
       } catch { /* ignore */ }
     });
-  }, [allProgress, dispatch]);
+  }, [allProgress, dispatch, t]);
 
   const serverProgress = readingLibraryResponse?.data.items;
   const progressBooks: LibraryProgressView[] = serverProgress
@@ -366,7 +369,7 @@ export default function LibraryPage() {
     : isReadingLibraryError
       ? Object.values(allProgress).map((progress) => ({
           bookId: progress.bookId,
-          title: progress.title ?? `Book #${progress.bookId}`,
+          title: progress.title ?? t("bookNumber", { id: progress.bookId }),
           coverUrl: progress.coverUrl,
           currentPage: progress.currentPage,
           totalPages: progress.totalPages,
@@ -415,12 +418,14 @@ export default function LibraryPage() {
 
   // Format time
   const formatTime = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 60) return t("secondsShort", { count: seconds });
     const mins = Math.floor(seconds / 60);
-    if (mins < 60) return `${mins}m`;
+    if (mins < 60) return t("minutesShort", { count: mins });
     const hrs = Math.floor(mins / 60);
     const remainMins = mins % 60;
-    return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`;
+    return remainMins > 0
+      ? t("hoursMinutesShort", { hours: hrs, minutes: remainMins })
+      : t("hoursShort", { count: hrs });
   };
 
   const formatDate = (iso: string) => {
@@ -428,13 +433,16 @@ export default function LibraryPage() {
     const now = new Date();
     const diffMs = now.getTime() - d.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffMins < 1) return t("justNow");
+    if (diffMins < 60) return t("minutesAgo", { count: diffMins });
     const diffHrs = Math.floor(diffMins / 60);
-    if (diffHrs < 24) return `${diffHrs}h ago`;
+    if (diffHrs < 24) return t("hoursAgo", { count: diffHrs });
     const diffDays = Math.floor(diffHrs / 24);
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    if (diffDays < 7) return t("daysAgo", { count: diffDays });
+    return d.toLocaleDateString(locale === "km" ? "km-KH" : "en-US", {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   if (isAuthLoading || !user) {
@@ -455,11 +463,11 @@ export default function LibraryPage() {
               href="/"
               className="hover:text-[#20659C] dark:hover:text-[#55B9EA] transition-colors"
             >
-              Home
+              {t("home")}
             </Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-[#1A1A1A] dark:text-white font-medium">
-              My Library
+              {t("title")}
             </span>
           </nav>
           <div className="flex items-center gap-3">
@@ -468,10 +476,10 @@ export default function LibraryPage() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1A1A1A] dark:text-white">
-                My Library
+                {t("title")}
               </h1>
               <p className="text-sm text-[#5E5E5E] dark:text-gray-400">
-                Track your reading progress and saved books
+                {t("description")}
               </p>
             </div>
           </div>
@@ -481,25 +489,25 @@ export default function LibraryPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8 opacity-0 animate-[heroReveal_0.5s_ease_0.2s_forwards]">
           <StatCard
             icon={Heart}
-            label="Saved Books"
+            label={t("savedBooks")}
             value={favorites.length}
             accent="bg-red-50 dark:bg-red-900/20 text-red-500"
           />
           <StatCard
             icon={BookMarked}
-            label="Currently Reading"
+            label={t("currentlyReading")}
             value={readingBooks.length}
             accent="bg-blue-50 dark:bg-blue-900/20 text-[#20659C]"
           />
           <StatCard
             icon={TrendingUp}
-            label="Completed"
+            label={t("completed")}
             value={completedBooks.length}
             accent="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500"
           />
           <StatCard
             icon={Clock}
-            label="Time Reading"
+            label={t("timeReading")}
             value={formatTime(totalReadingTime)}
             accent="bg-amber-50 dark:bg-amber-900/20 text-[#DF900A]"
           />
@@ -513,7 +521,7 @@ export default function LibraryPage() {
               <TabButton
                 id="favorites"
                 active={activeTab === "favorites"}
-                label="Saved"
+                label={t("saved")}
                 icon={Heart}
                 count={favorites.length}
                 onClick={setActiveTab}
@@ -521,7 +529,7 @@ export default function LibraryPage() {
               <TabButton
                 id="reading"
                 active={activeTab === "reading"}
-                label="Reading"
+                label={t("reading")}
                 icon={BookMarked}
                 count={readingBooks.length}
                 onClick={setActiveTab}
@@ -529,7 +537,7 @@ export default function LibraryPage() {
               <TabButton
                 id="completed"
                 active={activeTab === "completed"}
-                label="Completed"
+                label={t("completed")}
                 icon={CheckCircle2}
                 count={completedBooks.length}
                 onClick={setActiveTab}
@@ -537,7 +545,7 @@ export default function LibraryPage() {
               <TabButton
                 id="history"
                 active={activeTab === "history"}
-                label="History"
+                label={t("history")}
                 icon={Clock}
                 count={recentlyViewed.length}
                 onClick={setActiveTab}
@@ -550,7 +558,7 @@ export default function LibraryPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
             <input
               type="text"
-              placeholder="Search books..."
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-[#E2E8F0] dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-[#1A1A1A] dark:text-white placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#20659C]/30 focus:border-[#20659C] transition-all"
@@ -558,6 +566,7 @@ export default function LibraryPage() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
+                aria-label={t("clearSearch")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#5E5E5E]"
               >
                 <X className="w-3.5 h-3.5" />
@@ -576,13 +585,13 @@ export default function LibraryPage() {
                   icon={Heart}
                   title={
                     searchQuery
-                      ? "No matching saved books"
-                      : "No saved books yet"
+                      ? t("noMatchingSaved")
+                      : t("noSavedBooks")
                   }
                   description={
                     searchQuery
-                      ? "Try a different search term."
-                      : "Tap the heart icon on any book to save it to your library."
+                      ? t("tryDifferentSearch")
+                      : t("saveBooksHelp")
                   }
                 />
               ) : (
@@ -612,7 +621,7 @@ export default function LibraryPage() {
                               {fav.title}
                             </h4>
                             <p className="text-[10px] text-[#9CA3AF] mt-1">
-                              Saved {formatDate(fav.addedAt)}
+                              {t("savedAt", { date: formatDate(fav.addedAt) })}
                             </p>
                           </CardContent>
                         </Card>
@@ -624,7 +633,7 @@ export default function LibraryPage() {
                           dispatch(removeFavorite(fav.id));
                         }}
                         className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm flex items-center justify-center text-[#9CA3AF] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
-                        title="Remove from saved"
+                        title={t("removeSaved")}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -647,13 +656,13 @@ export default function LibraryPage() {
                   icon={BookMarked}
                   title={
                     searchQuery
-                      ? "No matching books"
-                      : "Not reading anything yet"
+                      ? t("noMatchingBooks")
+                      : t("notReadingYet")
                   }
                   description={
                     searchQuery
-                      ? "Try a different search term."
-                      : "Start reading a book and your progress will appear here."
+                      ? t("tryDifferentSearch")
+                      : t("readingHelp")
                   }
                 />
               ) : (
@@ -682,13 +691,13 @@ export default function LibraryPage() {
                   icon={CheckCircle2}
                   title={
                     searchQuery
-                      ? "No matching completed books"
-                      : "No completed books yet"
+                      ? t("noMatchingCompleted")
+                      : t("noCompletedBooks")
                   }
                   description={
                     searchQuery
-                      ? "Try a different search term."
-                      : "When you read a book to the last page, it will be marked as completed here."
+                      ? t("tryDifferentSearch")
+                      : t("completedHelp")
                   }
                 />
               ) : (
@@ -713,13 +722,13 @@ export default function LibraryPage() {
                   icon={Eye}
                   title={
                     searchQuery
-                      ? "No matching books in history"
-                      : "No reading history yet"
+                      ? t("noMatchingHistory")
+                      : t("noHistory")
                   }
                   description={
                     searchQuery
-                      ? "Try a different search term."
-                      : "Books you view will show up here."
+                      ? t("tryDifferentSearch")
+                      : t("historyHelp")
                   }
                 />
               ) : (

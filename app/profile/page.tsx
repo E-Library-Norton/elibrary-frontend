@@ -30,6 +30,7 @@ import {
 } from "@/store/api/authApi";
 import { toast } from "sonner";
 import { passwordSchema, profileSchema } from "@/lib/auth-schemas";
+import { useTranslations } from "next-intl";
 
 type ApiError = {
   data?: {
@@ -49,6 +50,7 @@ function getInitials(
 }
 
 function ProfilePageContent() {
+  const t = useTranslations("Profile");
   const router = useRouter();
   const { user, isAuthenticated, isAuthLoading } = useAuth();
   const [updateProfile, { isLoading: isSaving }] = useUpdateProfileMutation();
@@ -72,12 +74,12 @@ function ProfilePageContent() {
 
     // Validate type
     if (!file.type.startsWith("image/")) {
-      setAvatarError("Only image files are allowed.");
+      setAvatarError(t("imageOnly"));
       return;
     }
     // Validate size (max 5 MB)
     if (file.size > 5 * 1024 * 1024) {
-      setAvatarError("Image must be smaller than 5 MB.");
+      setAvatarError(t("imageTooLarge"));
       return;
     }
 
@@ -97,7 +99,7 @@ function ProfilePageContent() {
     } catch (err: unknown) {
       setAvatarError(
         (err as { data?: { message?: string } })?.data?.message ??
-          "Avatar upload failed."
+          t("avatarUploadFailed")
       );
       setAvatarPreview(null);
     } finally {
@@ -119,11 +121,11 @@ function ProfilePageContent() {
     window.history.replaceState({}, "", url.toString());
     if (status === "success") {
       refetchProfile();
-      toast.success("Email verified successfully! 🎉");
+      toast.success(t("emailVerified"));
     } else if (status === "expired") {
-      toast.error("Verification link has expired. Please request a new one.");
+      toast.error(t("verificationExpired"));
     } else {
-      toast.error("Invalid verification link.");
+      toast.error(t("verificationInvalid"));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -190,7 +192,7 @@ function ProfilePageContent() {
       setProfileError(
         data?.error?.message ??
         data?.message ??
-        "Failed to update profile."
+        t("profileUpdateFailed")
       );
     }
   };
@@ -199,7 +201,7 @@ function ProfilePageContent() {
     e.preventDefault();
     setPwError("");
     if (pw.newPassword !== pw.confirmPassword) {
-      setPwError("New passwords do not match.");
+      setPwError(t("passwordsDoNotMatch"));
       return;
     }
     const passwordResult = passwordSchema.safeParse(pw.newPassword);
@@ -217,7 +219,7 @@ function ProfilePageContent() {
       setPwError(
         data?.error?.message ??
         data?.message ??
-        "Failed to change password."
+        t("passwordChangeFailed")
       );
     }
   };
@@ -235,7 +237,7 @@ function ProfilePageContent() {
   const displayName =
     user.firstName && user.lastName
       ? `${user.firstName} ${user.lastName}`
-      : user.username ?? "User";
+      : user.username ?? t("userFallback");
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
@@ -276,7 +278,7 @@ function ProfilePageContent() {
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingAvatar}
             className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#20659C] hover:bg-[#55B9EA] disabled:opacity-50 transition-colors flex items-center justify-center shadow-md"
-            title="Change avatar"
+            title={t("changeAvatar")}
           >
             {isUploadingAvatar ? (
               <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
@@ -294,7 +296,7 @@ function ProfilePageContent() {
           <div className="flex items-center gap-1.5 mt-1 text-sm text-[#5E5E5E] dark:text-gray-400">
             <GraduationCap className="w-4 h-4" />
             <span>
-              Student ID:{" "}
+              {t("studentId")}: {" "}
               <strong className="text-[#1A1A1A] dark:text-white font-semibold">
                 {user.studentId}
               </strong>
@@ -304,7 +306,7 @@ function ProfilePageContent() {
           {avatarSuccess && (
             <div className="flex items-center gap-1.5 mt-2 text-xs text-green-600 dark:text-green-400">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Avatar updated!
+              {t("avatarUpdated")}
             </div>
           )}
           {avatarError && (
@@ -314,7 +316,7 @@ function ProfilePageContent() {
             </div>
           )}
           <p className="text-xs text-[#9CA3AF] mt-2">
-            Click the camera icon to upload a new photo (max 5 MB).
+            {t("avatarHelp")}
           </p>
         </div>
       </div>
@@ -326,18 +328,18 @@ function ProfilePageContent() {
           <div className="flex items-center gap-2 mb-0.5">
             <Settings className="w-5 h-5 text-[#20659C]" />
             <h2 className="text-base font-bold text-[#1A1A1A] dark:text-white">
-              Account Settings
+              {t("accountSettings")}
             </h2>
           </div>
           <p className="text-sm text-[#5E5E5E] dark:text-gray-400 mb-5">
-            Manage your account information
+            {t("accountDescription")}
           </p>
 
           {/* Success / Error banners */}
           {profileSuccess && (
             <div className="flex items-center gap-2 mb-4 px-3 py-2.5 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
-              Profile updated successfully!
+              {t("profileUpdated")}
             </div>
           )}
           {profileError && (
@@ -356,7 +358,7 @@ function ProfilePageContent() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-1">
-                  Full Name
+                  {t("fullName")}
                 </p>
                 {editMode ? (
                   <div className="grid grid-cols-2 gap-2">
@@ -368,7 +370,7 @@ function ProfilePageContent() {
                           firstName: e.target.value,
                         }))
                       }
-                      placeholder="First name"
+                      placeholder={t("firstNamePlaceholder")}
                       className="h-8 text-sm"
                     />
                     <Input
@@ -379,7 +381,7 @@ function ProfilePageContent() {
                           lastName: e.target.value,
                         }))
                       }
-                      placeholder="Last name"
+                      placeholder={t("lastNamePlaceholder")}
                       className="h-8 text-sm"
                     />
                   </div>
@@ -398,7 +400,7 @@ function ProfilePageContent() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-1">
-                  Email
+                  {t("email")}
                 </p>
                 {editMode ? (
                   <Input
@@ -407,7 +409,7 @@ function ProfilePageContent() {
                     onChange={(e) =>
                       setProfile((p) => ({ ...p, email: e.target.value }))
                     }
-                    placeholder="Email address"
+                    placeholder={t("emailPlaceholder")}
                     className="h-8 text-sm"
                   />
                 ) : (
@@ -418,7 +420,7 @@ function ProfilePageContent() {
                     {user.isEmailVerified && (
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-2 py-0.5 rounded-full">
                         <CheckCircle2 className="w-3 h-3" />
-                        Verified
+                        {t("verified")}
                       </span>
                     )}
                   </div>
@@ -433,7 +435,7 @@ function ProfilePageContent() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest mb-1">
-                  Student ID
+                  {t("studentId")}
                 </p>
                 {editMode ? (
                   <Input
@@ -444,7 +446,7 @@ function ProfilePageContent() {
                         studentId: e.target.value,
                       }))
                     }
-                    placeholder="Student ID"
+                    placeholder={t("studentIdPlaceholder")}
                     className="h-8 text-sm"
                   />
                 ) : (
@@ -458,7 +460,7 @@ function ProfilePageContent() {
 
           {/* Footer */}
           <div className="flex items-center justify-between mt-5 pt-4 border-t border-[#F1F5F9] dark:border-gray-800">
-            <p className="text-xs text-[#9CA3AF]">Keep your info up to date.</p>
+            <p className="text-xs text-[#9CA3AF]">{t("keepUpdated")}</p>
             {editMode ? (
               <div className="flex items-center gap-2">
                 <Button
@@ -480,7 +482,7 @@ function ProfilePageContent() {
                   disabled={isSaving}
                 >
                   <X className="w-3.5 h-3.5 mr-1" />
-                  Cancel
+                  {t("cancel")}
                 </Button>
                 <Button size="sm" onClick={handleSaveProfile} disabled={isSaving}>
                   {isSaving ? (
@@ -488,7 +490,7 @@ function ProfilePageContent() {
                   ) : (
                     <Save className="w-3.5 h-3.5 mr-1" />
                   )}
-                  Save
+                  {t("save")}
                 </Button>
               </div>
             ) : (
@@ -498,7 +500,7 @@ function ProfilePageContent() {
                 onClick={() => setEditMode(true)}
               >
                 <Pencil className="w-3.5 h-3.5 mr-1.5" />
-                Edit Profile
+                {t("editProfile")}
               </Button>
             )}
           </div>
@@ -509,11 +511,11 @@ function ProfilePageContent() {
           <div className="flex items-center gap-2 mb-0.5">
             <Shield className="w-5 h-5 text-[#20659C]" />
             <h2 className="text-base font-bold text-[#1A1A1A] dark:text-white">
-              Security Settings
+              {t("securitySettings")}
             </h2>
           </div>
           <p className="text-sm text-[#5E5E5E] dark:text-gray-400 mb-5">
-            Keep your account secure
+            {t("securityDescription")}
           </p>
 
           {/* Change Password sub-card */}
@@ -523,10 +525,10 @@ function ProfilePageContent() {
             </div>
             <div>
               <p className="text-sm font-semibold text-[#1A1A1A] dark:text-white">
-                Change Password
+                {t("changePassword")}
               </p>
               <p className="text-xs text-[#5E5E5E] dark:text-gray-400 mt-0.5 leading-relaxed">
-                Ensure your account is using a strong, secure password.
+                {t("changePasswordDescription")}
               </p>
             </div>
           </div>
@@ -535,7 +537,7 @@ function ProfilePageContent() {
           {pwSuccess && (
             <div className="flex items-center gap-2 mb-4 px-3 py-2.5 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
-              Password updated successfully!
+              {t("passwordUpdated")}
             </div>
           )}
           {pwError && (
@@ -549,12 +551,12 @@ function ProfilePageContent() {
             {/* Current Password */}
             <div>
               <label className="block text-sm font-medium text-[#1A1A1A] dark:text-white mb-1.5">
-                Current Password
+                {t("currentPassword")}
               </label>
               <div className="relative">
                 <Input
                   type={showPw.current ? "text" : "password"}
-                  placeholder="Enter current password"
+                  placeholder={t("currentPasswordPlaceholder")}
                   value={pw.currentPassword}
                   onChange={(e) =>
                     setPw((p) => ({ ...p, currentPassword: e.target.value }))
@@ -581,12 +583,12 @@ function ProfilePageContent() {
             {/* New Password */}
             <div>
               <label className="block text-sm font-medium text-[#1A1A1A] dark:text-white mb-1.5">
-                New Password
+                {t("newPassword")}
               </label>
               <div className="relative">
                 <Input
                   type={showPw.new ? "text" : "password"}
-                  placeholder="Enter new password"
+                  placeholder={t("newPasswordPlaceholder")}
                   value={pw.newPassword}
                   onChange={(e) =>
                     setPw((p) => ({ ...p, newPassword: e.target.value }))
@@ -607,20 +609,19 @@ function ProfilePageContent() {
                 </button>
               </div>
               <p className="text-xs text-[#9CA3AF] mt-1">
-                Use 8-20 characters with uppercase, lowercase, a number, and a
-                special character.
+                {t("passwordHelp")}
               </p>
             </div>
 
             {/* Confirm New Password */}
             <div>
               <label className="block text-sm font-medium text-[#1A1A1A] dark:text-white mb-1.5">
-                Confirm New Password
+                {t("confirmNewPassword")}
               </label>
               <div className="relative">
                 <Input
                   type={showPw.confirm ? "text" : "password"}
-                  placeholder="Confirm new password"
+                  placeholder={t("confirmNewPasswordPlaceholder")}
                   value={pw.confirmPassword}
                   onChange={(e) =>
                     setPw((p) => ({
@@ -655,10 +656,10 @@ function ProfilePageContent() {
               {isChangingPw ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Updating…
+                  {t("updating")}
                 </>
               ) : (
-                "Update Password"
+                t("updatePassword")
               )}
             </Button>
           </form>

@@ -5,16 +5,14 @@ import Link from "next/link";
 import { Search, BookOpen, ArrowRight, GraduationCap, BookMarked } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useTheme } from "next-themes";
 import { useGetBooksQuery } from "@/store/api/booksApi";
 import { WarpBackground } from "@/components/ui/warp-background";
+import { useTranslations } from "next-intl";
 
 
 export default function HeroSection() {
+  const t = useTranslations("Home");
   const [query, setQuery] = useState("");
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
   const { data: booksData } = useGetBooksQuery({ limit: 1, page: 1 });
   const totalBooks = booksData?.data?.total
     ? `${Number(booksData.data.total).toLocaleString()}+`
@@ -24,7 +22,7 @@ export default function HeroSection() {
     <section className="relative min-h-screen flex flex-col overflow-hidden bg-white dark:bg-[#07090f]">
       <WarpBackground
         className="flex-1 flex flex-col items-center justify-center border-none rounded-none bg-transparent p-0 w-full min-h-screen"
-        gridColor={isDark ? "rgba(85, 185, 234, 0.15)" : "rgba(32, 101, 156, 0.08)"}
+        gridColor="var(--home-warp-grid)"
         perspective={250}
         beamsPerSide={4}
         beamDuration={4}
@@ -43,27 +41,26 @@ export default function HeroSection() {
             <div className="mb-6 opacity-0 animate-[heroReveal_0.7s_ease_0.1s_forwards]">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#20659C]/20 dark:border-[#20659C]/40 bg-[#20659C]/[0.06] dark:bg-[#20659C]/[0.12] px-4 py-1.5 text-sm font-medium text-[#20659C] dark:text-[#55B9EA]">
                 <BookMarked className="w-3.5 h-3.5" />
-                Norton University · Digital Library
+                {t("heroBadge")}
               </span>
             </div>
 
             {/* Headline */}
             <h1 className="opacity-0 animate-[heroReveal_0.8s_ease_0.2s_forwards] leading-[1.06] tracking-tight mb-6">
               <span className="block text-5xl sm:text-6xl lg:text-[5.5rem] font-black text-[#20659C] dark:text-white uppercase">
-                Norton
+                {t("heroTitleFirst")}
               </span>
               <span className="block text-4xl sm:text-5xl lg:text-[4.5rem] font-black text-[#DF900A] uppercase">
-                Education Tomorrow
+                {t("heroTitleSecond")}
               </span>
               <span className="block text-4xl sm:text-5xl lg:text-[4.5rem] font-black text-[#55B9EA] uppercase">
-                Leaders
+                {t("heroTitleThird")}
               </span>
             </h1>
 
             {/* Sub */}
             <p className="max-w-xl mx-auto text-base sm:text-xl text-gray-500 dark:text-white/40 leading-relaxed mb-10 opacity-0 animate-[heroReveal_0.8s_ease_0.35s_forwards]">
-              Access&nbsp;<span className="font-semibold text-gray-800 dark:text-white/70">{totalBooks} books</span>,
-              research papers and digital resources — free for every Norton University student, anytime, anywhere.
+              {t("heroDescription", { count: totalBooks })}
             </p>
 
             {/* Search */}
@@ -72,7 +69,7 @@ export default function HeroSection() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-white/25" />
                   <Input
-                    placeholder="Search books, authors, subjects..."
+                    placeholder={t("searchPlaceholder")}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     className="pl-10 h-11 bg-transparent text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/25 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -84,7 +81,7 @@ export default function HeroSection() {
                   asChild
                 >
                   <Link href={query ? `/books?name=${encodeURIComponent(query)}` : "/books"}>
-                    Search
+                    {t("search")}
                   </Link>
                 </Button>
               </div>
@@ -99,7 +96,7 @@ export default function HeroSection() {
               >
                 <Link href="/books">
                   <BookOpen className="w-4 h-4" />
-                  Start Reading — Free
+                  {t("startReading")}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </Button>
@@ -111,7 +108,7 @@ export default function HeroSection() {
               >
                 <Link href="/about">
                   <GraduationCap className="w-4 h-4" />
-                  About Norton E-Library
+                  {t("aboutLibrary")}
                 </Link>
               </Button>
             </div>
@@ -121,5 +118,3 @@ export default function HeroSection() {
     </section>
   );
 }
-
-

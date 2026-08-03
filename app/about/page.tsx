@@ -21,34 +21,35 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslations } from "next-intl";
 
 /* ── Data ── */
 const values = [
   {
     icon: BookOpen,
-    title: "Open Knowledge",
-    description: "We believe knowledge should be accessible to every student, regardless of financial barriers.",
+    titleKey: "valueOpenTitle",
+    descriptionKey: "valueOpenDescription",
     bg: "bg-[#20659C]",
     glow: "group-hover:shadow-[0_0_30px_rgba(32,101,156,0.3)]",
   },
   {
     icon: Globe,
-    title: "Digital Innovation",
-    description: "Leveraging modern technology to bring the library experience to the digital age.",
+    titleKey: "valueInnovationTitle",
+    descriptionKey: "valueInnovationDescription",
     bg: "bg-[#55B9EA]",
     glow: "group-hover:shadow-[0_0_30px_rgba(85,185,234,0.3)]",
   },
   {
     icon: Users,
-    title: "Community First",
-    description: "Building a community of learners who support and inspire each other.",
+    titleKey: "valueCommunityTitle",
+    descriptionKey: "valueCommunityDescription",
     bg: "bg-[#DF900A]",
     glow: "group-hover:shadow-[0_0_30px_rgba(223,144,10,0.3)]",
   },
   {
     icon: Award,
-    title: "Academic Excellence",
-    description: "Curating only the highest-quality, peer-reviewed academic resources.",
+    titleKey: "valueExcellenceTitle",
+    descriptionKey: "valueExcellenceDescription",
     bg: "bg-emerald-500",
     glow: "group-hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]",
   },
@@ -58,56 +59,56 @@ const members = [
   {
     index: "00",
     name: "Hoeurn Chanthorn",
-    role: "Project Advisor",
+    roleKey: "roleAdvisor",
     photo: "/teams/advisor.jpg",
-    bio: "Guiding the team with expertise in software engineering and academic research methodologies.",
+    bioKey: "advisorBio",
     isLeader: false,
     isAdvisor: true,
   },
   {
     index: "01",
     name: "Chan Samnang",
-    role: "Full Stack Developer",
+    roleKey: "roleDeveloper",
     photo: "/teams/samnang.jpg",
-    bio: "You build it, you run it.",
+    bioKey: "samnangBio",
     isLeader: true,
     isAdvisor: false,
   },
   {
     index: "02",
     name: "Dok Dara",
-    role: "Full Stack Developer",
+    roleKey: "roleDeveloper",
     photo: "/teams/dara.jpg",
-    bio: "Pixels with purpose.",
+    bioKey: "daraBio",
     isLeader: false,
     isAdvisor: false,
   },
   {
     index: "03",
     name: "Rorsat Sorphiny",
-    role: "Full Stack Developer",
+    roleKey: "roleDeveloper",
     photo: "/teams/sorphiny.jpg",
-    bio: "Ship fast, ship secure.",
+    bioKey: "sorphinyBio",
     isLeader: false,
     isAdvisor: false,
   },
   {
     index: "04",
     name: "Hoeung Phearun",
-    role: "Full Stack Developer",
+    roleKey: "roleDeveloper",
     photo: "/teams/phearun.jpg",
-    bio: "Every threat has a signature.",
+    bioKey: "phearunBio",
     isLeader: false,
     isAdvisor: false,
   },
 ];
 
 const milestones = [
-  { year: "2018", event: "E-Library Norton launched with 2,000 digital books", icon: Zap },
-  { year: "2020", event: "Expanded to 8,000 titles across all faculties", icon: BookOpen },
-  { year: "2022", event: "Reached 5,000 active student users", icon: Users },
-  { year: "2023", event: "Introduced AI-powered search and recommendations", icon: Sparkles },
-  { year: "2024", event: "15,000+ books and 8,500+ registered students", icon: Star },
+  { year: "2018", eventKey: "milestone2018", icon: Zap },
+  { year: "2020", eventKey: "milestone2020", icon: BookOpen },
+  { year: "2022", eventKey: "milestone2022", icon: Users },
+  { year: "2023", eventKey: "milestone2023", icon: Sparkles },
+  { year: "2024", eventKey: "milestone2024", icon: Star },
 ];
 
 const techStack = [
@@ -214,6 +215,7 @@ function StatItem({ value, suffix, label, active }: { value: number; suffix: str
 
 /* ── Unified Team Card (advisor + members) ── */
 function TeamMemberCard({ member, delay }: { member: typeof members[0]; delay: number }) {
+  const t = useTranslations("About");
   const [imgError, setImgError] = useState(false);
   const accent = member.isAdvisor ? "#DF900A" : "#00D0B2";
   const accentAlt = member.isAdvisor ? "#f5b942" : "#00cfff";
@@ -294,7 +296,7 @@ function TeamMemberCard({ member, delay }: { member: typeof members[0]; delay: n
         </h3>
         {/* Role */}
         <p className="text-[0.72rem] font-semibold tracking-widest uppercase mb-3" style={{ color: accent }}>
-          {member.role}
+          {t(member.roleKey)}
         </p>
 
         {/* Divider */}
@@ -306,7 +308,7 @@ function TeamMemberCard({ member, delay }: { member: typeof members[0]; delay: n
         {/* Bio */}
         <p className="text-[0.82rem] text-gray-400 dark:text-gray-500 leading-relaxed italic mb-4">
           <span className="not-italic" style={{ color: `${accent}99` }}>&gt; </span>
-          {member.bio}
+          {t(member.bioKey)}
           <span className="not-italic" style={{ color: `${accent}99` }}> _</span>
         </p>
 
@@ -314,15 +316,15 @@ function TeamMemberCard({ member, delay }: { member: typeof members[0]; delay: n
         <div className="mt-auto">
           {member.isAdvisor ? (
             <span className="text-[0.68rem] font-bold tracking-[0.14em] uppercase rounded-full px-4 py-1.5 text-[#DF900A] bg-[rgba(223,144,10,0.06)] border border-[rgba(223,144,10,0.2)]">
-              Project Advisor
+              {t("projectAdvisor")}
             </span>
           ) : member.isLeader ? (
             <span className="text-[0.68rem] font-bold tracking-[0.14em] uppercase rounded-full px-4 py-1.5 text-[#c97000] bg-[rgba(200,120,0,0.06)] border border-[rgba(200,120,0,0.2)]">
-              Team Leader
+              {t("teamLeader")}
             </span>
           ) : (
             <span className="text-[0.68rem] font-bold tracking-[0.14em] uppercase rounded-full px-4 py-1.5 text-[#00D0B2] bg-[rgba(0,208,178,0.06)] border border-[rgba(0,208,178,0.18)]">
-              Member
+              {t("member")}
             </span>
           )}
         </div>
@@ -335,6 +337,7 @@ function TeamMemberCard({ member, delay }: { member: typeof members[0]; delay: n
    ABOUT PAGE
    ═══════════════════════════════════════════════ */
 export default function AboutPage() {
+  const t = useTranslations("About");
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -372,7 +375,7 @@ export default function AboutPage() {
           >
             <div className="h-px w-10 bg-[#20659C]/40" />
             <span className="text-xs font-bold tracking-[0.25em] uppercase text-[#20659C] dark:text-[#55B9EA]">
-              Norton University
+              {t("university")}
             </span>
             <div className="h-px w-10 bg-[#20659C]/40" />
           </div>
@@ -382,12 +385,12 @@ export default function AboutPage() {
             className="text-5xl sm:text-6xl lg:text-[5.5rem] font-extrabold leading-[1.05] tracking-tight mb-7 opacity-0"
             style={{ animation: "heroReveal 0.7s ease-out 0.25s forwards" }}
           >
-            <span className="text-gray-900 dark:text-white block">MEET OUR</span>
+            <span className="text-gray-900 dark:text-white block">{t("heroMeet")}</span>
             <span className="block text-[#20659C] dark:text-[#55B9EA]">
-              DIGITAL
+              {t("heroDigital")}
             </span>
             <span className="block text-gray-400 dark:text-gray-500">
-              E-LIBRARY
+              {t("heroLibrary")}
             </span>
           </h1>
 
@@ -396,8 +399,7 @@ export default function AboutPage() {
             className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed opacity-0"
             style={{ animation: "heroReveal 0.7s ease-out 0.45s forwards" }}
           >
-            Norton University&apos;s official digital library — a modern, accessible hub for academic
-            books, journals, and research resources, built with passion by students, for students.
+            {t("heroDescription")}
           </p>
 
           {/* ── CTA buttons ── */}
@@ -410,7 +412,7 @@ export default function AboutPage() {
               asChild
               className="bg-[#20659C] hover:bg-[#1a5287] text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.03] gap-2 font-semibold rounded-xl px-8"
             >
-              <Link href="/books">Our Library</Link>
+              <Link href="/books">{t("ourLibrary")}</Link>
             </Button>
             <Button
               size="lg"
@@ -418,7 +420,7 @@ export default function AboutPage() {
               asChild
               className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 gap-2 rounded-xl px-8 font-semibold"
             >
-              <Link href="#team">Meet the Team</Link>
+              <Link href="#team">{t("meetTeam")}</Link>
             </Button>
           </div>
         </div>
@@ -428,16 +430,16 @@ export default function AboutPage() {
       <section ref={stats.ref} className="bg-white dark:bg-gray-950 border-y border-gray-100 dark:border-gray-800 py-12">
         <div className="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-10">
           {[
-            { value: 5,     suffix: "",  label: "Team Members",   color: "text-[#20659C] dark:text-[#55B9EA]" },
-            { value: 15000, suffix: "+", label: "Digital Books",  color: "text-[#20659C] dark:text-[#55B9EA]" },
-            { value: 8500,  suffix: "+", label: "Active Students",color: "text-[#DF900A]" },
-            { value: 6,     suffix: "",  label: "Years of Growth",color: "text-[#20659C] dark:text-[#55B9EA]" },
+            { value: 5,     suffix: "",  labelKey: "statsTeamMembers",    color: "text-[#20659C] dark:text-[#55B9EA]" },
+            { value: 15000, suffix: "+", labelKey: "statsDigitalBooks",   color: "text-[#20659C] dark:text-[#55B9EA]" },
+            { value: 8500,  suffix: "+", labelKey: "statsActiveStudents", color: "text-[#DF900A]" },
+            { value: 6,     suffix: "",  labelKey: "statsYearsGrowth",    color: "text-[#20659C] dark:text-[#55B9EA]" },
           ].map((s) => (
-            <div key={s.label} className="text-center">
+            <div key={s.labelKey} className="text-center">
               <p className={`text-4xl font-extrabold ${s.color}`}>
                 <span>{stats.inView ? s.value.toLocaleString() : "0"}</span>{s.suffix}
               </p>
-              <p className="text-sm text-gray-400 mt-1 font-medium">{s.label}</p>
+              <p className="text-sm text-gray-400 mt-1 font-medium">{t(s.labelKey)}</p>
             </div>
           ))}
         </div>
@@ -450,10 +452,10 @@ export default function AboutPage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`text-center mb-14 transition-all duration-700 ${story.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-            <Badge className="mb-4 bg-[#DF900A]/10 text-[#DF900A] border-[#DF900A]/20">Our Journey</Badge>
+            <Badge className="mb-4 bg-[#DF900A]/10 text-[#DF900A] border-[#DF900A]/20">{t("journey")}</Badge>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">
-              How It All{" "}
-              <span className="bg-gradient-to-r from-[#20659C] to-[#55B9EA] bg-clip-text text-transparent">Started</span>
+              {t("storyTitle")} {" "}
+              <span className="bg-gradient-to-r from-[#20659C] to-[#55B9EA] bg-clip-text text-transparent">{t("storyHighlight")}</span>
             </h2>
           </div>
 
@@ -466,13 +468,10 @@ export default function AboutPage() {
                   <div className="w-10 h-10 rounded-xl bg-[#20659C] flex items-center justify-center shadow-md">
                     <Zap className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-[#1A1A1A] dark:text-white">How It Started</h3>
+                  <h3 className="text-lg font-bold text-[#1A1A1A] dark:text-white">{t("howStarted")}</h3>
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
-                  In 2018, E-Library Norton was born from a simple idea: every student at Norton
-                  University deserves free, instant access to quality academic resources. Starting
-                  with just 2,000 digital books, we&apos;ve grown into a comprehensive platform
-                  serving thousands of students across all faculties.
+                  {t("howStartedDescription")}
                 </p>
                 <div className="space-y-3">
                   {milestones.map((m, i) => {
@@ -484,7 +483,7 @@ export default function AboutPage() {
                         </div>
                         <div>
                           <span className="text-[11px] font-bold text-[#DF900A] uppercase tracking-wider">{m.year}</span>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug">{m.event}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 leading-snug">{t(m.eventKey)}</p>
                         </div>
                       </div>
                     );
@@ -502,26 +501,24 @@ export default function AboutPage() {
                     <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
                       <Target className="w-5 h-5 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold">Our Mission</h3>
+                    <h3 className="text-lg font-bold">{t("mission")}</h3>
                   </div>
                   <p className="text-white/80 leading-relaxed mb-8">
-                    To provide every Norton University student with free, instant access to a
-                    world-class digital library that supports academic excellence and lifelong learning,
-                    bridging the gap between knowledge and opportunity.
+                    {t("missionDescription")}
                   </p>
                   <div className="space-y-3">
                     {[
-                      "15,000+ curated digital books & journals",
-                      "120+ subject categories across all faculties",
-                      "AI-powered search & recommendations",
-                      "24/7 access from any device, anywhere",
-                      "100% free for all registered NU students",
+                      "missionFeatureBooks",
+                      "missionFeatureCategories",
+                      "missionFeatureAi",
+                      "missionFeatureAccess",
+                      "missionFeatureFree",
                     ].map((item) => (
                       <div key={item} className="flex items-start gap-3">
                         <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
                           <CheckCircle2 className="w-3 h-3 text-white" />
                         </div>
-                        <p className="text-sm text-white/80 leading-snug">{item}</p>
+                        <p className="text-sm text-white/80 leading-snug">{t(item)}</p>
                       </div>
                     ))}
                   </div>
@@ -539,25 +536,23 @@ export default function AboutPage() {
                     <div className="w-10 h-10 rounded-xl bg-[#DF900A] flex items-center justify-center shadow-md">
                       <Eye className="w-5 h-5 text-white" />
                     </div>
-                    <h3 className="text-lg font-bold text-[#1A1A1A] dark:text-white">Our Vision</h3>
+                    <h3 className="text-lg font-bold text-[#1A1A1A] dark:text-white">{t("vision")}</h3>
                   </div>
                   <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
-                    To become Southeast Asia&apos;s leading university digital library, setting the
-                    standard for accessible, innovative, and AI-enhanced academic resources —
-                    empowering the next generation of Cambodian scholars and professionals.
+                    {t("visionDescription")}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { icon: Globe, label: "Regional Leadership", desc: "Southeast Asia's top uni-library" },
-                    { icon: Cpu, label: "AI-Enhanced", desc: "Smart recommendations & search" },
-                    { icon: Heart, label: "Student-First", desc: "Designed for learner success" },
-                    { icon: Sparkles, label: "Always Evolving", desc: "Continuously improving platform" },
+                    { icon: Globe, labelKey: "visionRegional", descKey: "visionRegionalDescription" },
+                    { icon: Cpu, labelKey: "visionAi", descKey: "visionAiDescription" },
+                    { icon: Heart, labelKey: "visionStudent", descKey: "visionStudentDescription" },
+                    { icon: Sparkles, labelKey: "visionEvolving", descKey: "visionEvolvingDescription" },
                   ].map((v) => (
-                    <div key={v.label} className="bg-white dark:bg-gray-800/60 rounded-2xl p-4 border border-[#DF900A]/10 shadow-sm">
+                    <div key={v.labelKey} className="bg-white dark:bg-gray-800/60 rounded-2xl p-4 border border-[#DF900A]/10 shadow-sm">
                       <v.icon className="w-5 h-5 text-[#DF900A] mb-2" />
-                      <p className="text-xs font-bold text-[#1A1A1A] dark:text-white mb-0.5">{v.label}</p>
-                      <p className="text-[11px] text-gray-400 leading-snug">{v.desc}</p>
+                      <p className="text-xs font-bold text-[#1A1A1A] dark:text-white mb-0.5">{t(v.labelKey)}</p>
+                      <p className="text-[11px] text-gray-400 leading-snug">{t(v.descKey)}</p>
                     </div>
                   ))}
                 </div>
@@ -572,13 +567,13 @@ export default function AboutPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#20659C]/5 dark:bg-[#20659C]/10 blur-[100px]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`text-center mb-12 transition-all duration-700 ${valuesSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-            <Badge className="mb-4 bg-[#20659C]/10 text-[#20659C] dark:text-[#55B9EA] border-[#20659C]/20">What Drives Us</Badge>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">Our Core Values</h2>
+            <Badge className="mb-4 bg-[#20659C]/10 text-[#20659C] dark:text-[#55B9EA] border-[#20659C]/20">{t("valuesEyebrow")}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">{t("valuesTitle")}</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((v, i) => (
               <div
-                key={v.title}
+                key={v.titleKey}
                 className={`group transition-all duration-700 ${valuesSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
                 style={{ transitionDelay: `${(i + 1) * 120}ms` }}
               >
@@ -588,8 +583,8 @@ export default function AboutPage() {
                     <div className={`w-14 h-14 rounded-xl ${v.bg} mx-auto mb-4 flex items-center justify-center shadow-lg transition-all duration-500 group-hover:scale-110 group-hover:rotate-6`}>
                       <v.icon className="w-7 h-7 text-white" />
                     </div>
-                    <h3 className="font-bold text-[#1A1A1A] dark:text-white mb-2">{v.title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{v.description}</p>
+                    <h3 className="font-bold text-[#1A1A1A] dark:text-white mb-2">{t(v.titleKey)}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{t(v.descriptionKey)}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -602,10 +597,10 @@ export default function AboutPage() {
       <section ref={techSection.ref} className="py-20 bg-white dark:bg-gray-950 relative overflow-hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
           <div className={`text-center transition-all duration-700 ${techSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-            <Badge className="mb-4 bg-[#55B9EA]/10 text-[#20659C] dark:text-[#55B9EA] border-[#55B9EA]/20">Our Stack</Badge>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">Built With Modern Tech</h2>
+            <Badge className="mb-4 bg-[#55B9EA]/10 text-[#20659C] dark:text-[#55B9EA] border-[#55B9EA]/20">{t("stackEyebrow")}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">{t("stackTitle")}</h2>
             <p className="text-gray-500 dark:text-gray-400 mt-3 max-w-xl mx-auto">
-              Carefully chosen technologies that make the platform fast, reliable, and scalable for every student.
+              {t("stackDescription")}
             </p>
           </div>
         </div>
@@ -639,10 +634,10 @@ export default function AboutPage() {
           {/* Section header */}
           <div className={`mb-10 transition-all duration-700 ${teamSection.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-1">
-              Our <em className="text-[#00D0B2] not-italic">Team</em>
+              {t("teamTitle")} <em className="text-[#00D0B2] not-italic">{t("teamTitleHighlight")}</em>
             </h2>
             <p className="text-gray-500 dark:text-gray-400 leading-relaxed max-w-md">
-              The advisor and dedicated developers building the platform.
+              {t("teamDescription")}
             </p>
           </div>
 
@@ -672,18 +667,17 @@ export default function AboutPage() {
             <div className="relative z-10">
               <div className={`transition-all duration-700 delay-200 ${cta.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
                 <Sparkles className="w-8 h-8 mx-auto mb-4 text-[#DF900A]" style={{ animation: "hero-spin 4s linear infinite" }} />
-                <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Let&apos;s Build Together</h2>
+                <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">{t("ctaTitle")}</h2>
                 <p className="text-white/70 max-w-lg mx-auto mb-8 text-lg">
-                  Have a suggestion, a question, or want to collaborate? We&apos;d love to hear from you.
-                  Join thousands of students exploring the library today.
+                  {t("ctaDescription")}
                 </p>
               </div>
               <div className={`flex flex-col sm:flex-row gap-4 justify-center transition-all duration-700 delay-400 ${cta.inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
                 <Button size="lg" asChild className="bg-white text-[#20659C] hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.03] gap-2 font-semibold">
-                  <Link href="/books">Browse the Library <ArrowRight className="w-5 h-5" /></Link>
+                  <Link href="/books">{t("browseLibrary")} <ArrowRight className="w-5 h-5" /></Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild className="border-white/20 text-white hover:bg-white/10 backdrop-blur-sm gap-2">
-                  <Link href="/contact"><Mail className="w-4 h-4" /> Contact Us</Link>
+                  <Link href="/contact"><Mail className="w-4 h-4" /> {t("contactUs")}</Link>
                 </Button>
               </div>
             </div>

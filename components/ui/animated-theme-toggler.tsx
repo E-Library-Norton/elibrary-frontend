@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useRef, useSyncExternalStore } from "react"
 import { useTheme } from "next-themes"
 import { flushSync } from "react-dom"
 
@@ -52,19 +52,25 @@ function MoonIcon({ className }: { className?: string }) {
 
 interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<"button"> {
   duration?: number
+  useViewTransition?: boolean
 }
+
+const subscribeToHydration = () => () => {}
 
 export const AnimatedThemeToggler = ({
   className,
   duration = 400,
+  useViewTransition = true,
   ...props
 }: AnimatedThemeTogglerProps) => {
   const { setTheme, resolvedTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false
+  )
   const buttonRef = useRef<HTMLButtonElement>(null)
   const isTransitioningRef = useRef(false)
-
-  useEffect(() => setMounted(true), [])
 
   const isDark = resolvedTheme === "dark"
 
@@ -88,7 +94,15 @@ export const AnimatedThemeToggler = ({
       setTheme(isDark ? "light" : "dark")
     }
 
-    if (typeof document.startViewTransition !== "function") {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches
+
+    if (
+      !useViewTransition ||
+      prefersReducedMotion ||
+      typeof document.startViewTransition !== "function"
+    ) {
       applyTheme()
       return
     }
@@ -125,7 +139,7 @@ export const AnimatedThemeToggler = ({
         )
       })
     }
-  }, [isDark, duration, setTheme])
+  }, [isDark, duration, setTheme, useViewTransition])
 
   if (!mounted) {
     return (

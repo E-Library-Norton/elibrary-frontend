@@ -20,6 +20,7 @@ import { useGetBooksQuery } from "@/store/api/booksApi";
 import type { Book } from "@/types";
 import { cn } from "@/lib/utils";
 import { StarRating } from "@/components/ui/star-rating";
+import { useTranslations } from "next-intl";
 
 /* ── Cover with fallback ──────────────────────────────────────────────────── */
 function BookCover({
@@ -77,13 +78,14 @@ function SkeletonCard({ index }: { index: number }) {
 
 /* ── Rank badge ───────────────────────────────────────────────────────────── */
 const rankBadges = [
-  { label: "#1 Most Read", bg: "bg-gradient-to-r from-amber-400 to-amber-500", glow: "shadow-amber-400/30" },
-  { label: "#2 Trending", bg: "bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-500 dark:to-slate-600", glow: "shadow-slate-400/20" },
-  { label: "#3 Popular", bg: "bg-gradient-to-r from-orange-400 to-orange-500", glow: "shadow-orange-400/20" },
-];
+  { labelKey: "rankMostRead" as const, bg: "bg-gradient-to-r from-amber-400 to-amber-500", glow: "shadow-amber-400/30" },
+  { labelKey: "rankTrending" as const, bg: "bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-500 dark:to-slate-600", glow: "shadow-slate-400/20" },
+  { labelKey: "rankPopular" as const, bg: "bg-gradient-to-r from-orange-400 to-orange-500", glow: "shadow-orange-400/20" },
+] as const;
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
 export default function FeaturedBooks() {
+  const t = useTranslations("Home");
   const { data, isLoading } = useGetBooksQuery({
     limit: 15,
     sortBy: "views",
@@ -109,13 +111,13 @@ export default function FeaturedBooks() {
           <div className="opacity-0 animate-[heroReveal_0.5s_ease_0.1s_forwards]">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#DF900A]/10 dark:bg-[#DF900A]/20 text-[#DF900A] text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              Curated for You
+              {t("featuredEyebrow")}
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">
-              Featured Books
+              {t("featuredTitle")}
             </h2>
             <p className="mt-2 text-[#5E5E5E] dark:text-gray-400 max-w-md text-base">
-              Hand-picked titles across every discipline at Norton University.
+              {t("featuredDescription")}
             </p>
           </div>
           <Button
@@ -124,7 +126,7 @@ export default function FeaturedBooks() {
             className="shrink-0 gap-2 rounded-xl border-[#20659C]/20 hover:border-[#20659C]/40 hover:bg-[#20659C]/5 dark:border-gray-700 dark:hover:border-[#55B9EA]/40 dark:hover:bg-[#55B9EA]/5 opacity-0 animate-[heroReveal_0.5s_ease_0.2s_forwards]"
           >
             <Link href="/books">
-              View All Books <ArrowRight className="w-4 h-4" />
+              {t("viewAllBooks")} <ArrowRight className="w-4 h-4" />
             </Link>
           </Button>
         </div>
@@ -173,7 +175,7 @@ export default function FeaturedBooks() {
                               )}
                             >
                               <TrendingUp className="w-3 h-3" />
-                              {rankBadges[index].label}
+                              {t(rankBadges[index].labelKey)}
                             </span>
                           </div>
                         )}
@@ -196,21 +198,21 @@ export default function FeaturedBooks() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             {book.pdfUrl && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full" title="PDF Available">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full" title={t("pdfAvailable")}>
                                 <FileText className="w-3 h-3" />
-                                PDF
+                                {t("pdf")}
                               </span>
                             )}
                             {(book.videoUrl || (book as any).video_url) && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-purple-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full" title="Video Available">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-purple-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full" title={t("videoAvailable")}>
                                 <Video className="w-3 h-3" />
-                                Video
+                                {t("video")}
                               </span>
                             )}
                             {(book.audioUrl || (book as any).audio_url) && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full" title="Audio Available">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full" title={t("audioAvailable")}>
                                 <Headphones className="w-3 h-3" />
-                                Audio
+                                {t("audio")}
                               </span>
                             )}
                           </div>
@@ -263,11 +265,11 @@ export default function FeaturedBooks() {
                           {book.pages && (
                             <span className="text-xs text-[#9CA3AF] flex items-center gap-1.5">
                               <BookOpen className="w-3.5 h-3.5" />
-                              {book.pages} pages
+                              {t("pages", { count: book.pages })}
                             </span>
                           )}
                           <span className="text-xs text-[#20659C] dark:text-[#55B9EA] font-semibold ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-                            Read more <ArrowRight className="w-3 h-3" />
+                            {t("readMore")} <ArrowRight className="w-3 h-3" />
                           </span>
                         </div>
                       </div>

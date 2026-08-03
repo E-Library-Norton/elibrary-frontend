@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useGetBooksQuery } from "@/store/api/booksApi";
 import type { Book } from "@/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 function MediaCover({
   coverUrl,
@@ -55,6 +56,7 @@ function SkeletonCard({ index }: { index: number }) {
 }
 
 export default function FeaturedVideos() {
+  const t = useTranslations("Home");
   const { data, isLoading } = useGetBooksQuery({
     limit: 6,
     hasVideo: "true",
@@ -72,18 +74,18 @@ export default function FeaturedVideos() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 text-purple-600 text-xs font-bold uppercase tracking-wider mb-3">
               <Video className="w-3.5 h-3.5" />
-              Video Resources
+              {t("videosEyebrow")}
             </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">
-              Watch & Learn
+              {t("videosTitle")}
             </h2>
             <p className="mt-2 text-[#5E5E5E] dark:text-gray-400 max-w-md text-base">
-              Supplementary video materials for your academic success.
+              {t("videosDescription")}
             </p>
           </div>
           <Button variant="outline" asChild className="rounded-xl border-purple-200 hover:bg-purple-50">
             <Link href="/videos">
-              View All Videos <ArrowRight className="w-4 h-4 ml-2" />
+              {t("viewAllVideos")} <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
           </Button>
         </div>
@@ -110,7 +112,7 @@ export default function FeaturedVideos() {
                     </div>
                     <div className="absolute bottom-3 left-3 flex gap-2">
                        <Badge className="bg-purple-600 text-white border-0 text-[10px] font-bold">
-                          VIDEO
+                          {t("video")}
                        </Badge>
                     </div>
                   </div>
@@ -135,7 +137,7 @@ export default function FeaturedVideos() {
                         </span>
                       </div>
                       <span className="text-xs font-bold text-purple-600 flex items-center gap-1">
-                        Watch Now <ArrowRight className="w-3 h-3" />
+                        {t("watchNow")} <ArrowRight className="w-3 h-3" />
                       </span>
                     </div>
                   </div>

@@ -31,6 +31,7 @@
   --background: #FFFFFF;
   --surface: #F8FAFC;
   --border: #E2E8F0;
+  --home-warp-grid: rgba(32, 101, 156, 0.08);
 
   /* Radii */
   --radius: 0.625rem;
@@ -68,6 +69,7 @@
   --background: #0F172A;
   --surface: #1E293B;
   --border: #334155;
+  --home-warp-grid: rgba(85, 185, 234, 0.15);
   --text-black: #F1F5F9;
   --text-description: #94A3B8;
   --text-muted: #64748B;
@@ -114,8 +116,9 @@
   --color-text-white: var(--text-white);
   --color-text-description: var(--text-description);
   --color-text-muted: var(--text-muted);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-google-sans), var(--font-noto-sans-khmer), Arial, sans-serif;
+  --font-khmer: var(--font-noto-sans-khmer), var(--font-google-sans), Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
@@ -183,12 +186,28 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-google-sans), var(--font-noto-sans-khmer), Arial, sans-serif;
+}
+
+html,
 body {
   background: var(--background);
   color: var(--text-black);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Khmer containers prefer Noto Sans Khmer. Mixed-language content also works
+   without this class because Google Sans is loaded with Latin glyphs only. */
+:lang(km),
+.font-khmer {
+  font-family: var(--font-noto-sans-khmer), var(--font-google-sans), Arial, sans-serif;
 }
 
 /* Smooth scroll */
@@ -297,6 +316,75 @@ html {
 ::view-transition-old(root), ::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;
+}
+
+/* Driver.js onboarding — Norton E-Library theme */
+.driver-popover.norton-driver-popover {
+  max-width: min(22rem, calc(100vw - 2rem));
+  border: 1px solid rgb(32 101 156 / 18%);
+  border-radius: 1rem;
+  background: #ffffff;
+  color: #1a1a1a;
+  box-shadow: 0 24px 64px rgb(15 23 42 / 24%);
+  font-family: var(--font-google-sans), var(--font-noto-sans-khmer), Arial, sans-serif;
+}
+
+.driver-popover.norton-driver-popover .driver-popover-title {
+  color: #123f64;
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.driver-popover.norton-driver-popover .driver-popover-description,
+.driver-popover.norton-driver-popover .driver-popover-progress-text {
+  color: #5e5e5e;
+}
+
+.driver-popover.norton-driver-popover .driver-popover-next-btn,
+.driver-popover.norton-driver-popover .driver-popover-done-btn {
+  border-color: #20659c;
+  background: #20659c;
+  color: #ffffff;
+  text-shadow: none;
+}
+
+.driver-popover.norton-driver-popover .driver-popover-prev-btn {
+  border-color: #d6e2ec;
+  background: #ffffff;
+  color: #20659c;
+  text-shadow: none;
+}
+
+.driver-popover.norton-driver-popover button:focus-visible {
+  outline: 2px solid #55b9ea;
+  outline-offset: 2px;
+}
+
+.dark .driver-popover.norton-driver-popover {
+  border-color: rgb(85 185 234 / 30%);
+  background: #1e293b;
+  color: #f1f5f9;
+  box-shadow: 0 24px 72px rgb(0 0 0 / 52%);
+}
+
+.dark .driver-popover.norton-driver-popover .driver-popover-title {
+  color: #7dd3fc;
+}
+
+.dark .driver-popover.norton-driver-popover .driver-popover-description,
+.dark .driver-popover.norton-driver-popover .driver-popover-progress-text {
+  color: #cbd5e1;
+}
+
+.dark .driver-popover.norton-driver-popover .driver-popover-prev-btn {
+  border-color: #475569;
+  background: #334155;
+  color: #e0f2fe;
+}
+
+.norton-driver-hint {
+  --driver-hint-size: 18px;
+  --driver-hint-color: #df900a;
 }
 
 @layer base {

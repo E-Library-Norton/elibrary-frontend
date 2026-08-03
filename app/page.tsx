@@ -7,6 +7,7 @@ import CategoriesSection from "@/components/home/CategoriesSection";
 import FeaturedVideos from "@/components/home/FeaturedVideos";
 import FeaturedAudios from "@/components/home/FeaturedAudios";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
+import SelectedForYou from "@/components/home/SelectedForYou";
 
 export default function HomePage() {
   return (
@@ -15,6 +16,7 @@ export default function HomePage() {
       <TrustedBySection />
       <StatsSection />
       <HowItWorksSection />
+      <SelectedForYou />
       <FeaturedBooks />
       <CategoriesSection />
       <FeaturedVideos />

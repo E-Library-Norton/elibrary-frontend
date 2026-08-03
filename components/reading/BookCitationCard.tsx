@@ -73,7 +73,7 @@ export function BookCitationCard({ book }: BookCitationCardProps) {
         </div>
 
         <div className="relative min-h-28 rounded-2xl border border-slate-200 bg-slate-50 p-5 pr-14 dark:border-slate-700 dark:bg-slate-800/70">
-          <p className="select-text font-mono text-sm leading-7 text-slate-800 dark:text-slate-100 sm:text-base">
+          <p className="select-text font-sans text-sm leading-7 text-slate-800 dark:text-slate-100 sm:text-base">
             {citation}
           </p>
           <button

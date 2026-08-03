@@ -770,7 +770,10 @@ export default function PdfReader({
         </span>
 
         {totalPages > 0 && (
-          <div className="hidden w-64 shrink-0 lg:block">
+          <div
+            data-tour="reader-progress"
+            className="hidden w-64 shrink-0 lg:block"
+          >
             <ReadingProgressBar
               currentPage={currentPage}
               totalPages={totalPages}
@@ -784,13 +787,16 @@ export default function PdfReader({
           </div>
         )}
 
-        <BookmarkButton
-          pageNumber={currentPage}
-          isBookmarked={isCurrentPageBookmarked}
-          isSaving={isCreatingBookmark}
-          onSave={handleCreateBookmark}
-        />
+        <div data-tour="reader-bookmark-page">
+          <BookmarkButton
+            pageNumber={currentPage}
+            isBookmarked={isCurrentPageBookmarked}
+            isSaving={isCreatingBookmark}
+            onSave={handleCreateBookmark}
+          />
+        </div>
         <Button
+          data-tour="reader-bookmarks"
           type="button"
           variant="ghost"
           size="sm"
@@ -805,6 +811,7 @@ export default function PdfReader({
           <span className="hidden md:inline">{bookmarks.length}</span>
         </Button>
         <Button
+          data-tour="reader-notes"
           type="button"
           variant="ghost"
           size="sm"
@@ -821,7 +828,10 @@ export default function PdfReader({
       </header>
 
       {totalPages > 0 && (
-        <div className="shrink-0 border-b border-slate-200 bg-white px-3 py-2 lg:hidden dark:border-slate-700 dark:bg-slate-800">
+        <div
+          data-tour="reader-progress"
+          className="shrink-0 border-b border-slate-200 bg-white px-3 py-2 lg:hidden dark:border-slate-700 dark:bg-slate-800"
+        >
           <ReadingProgressBar
             currentPage={currentPage}
             totalPages={totalPages}
@@ -854,6 +864,7 @@ export default function PdfReader({
       )}
 
       <div
+        data-tour="reader-document"
         ref={readerContainerRef}
         className="relative flex-1 overflow-hidden"
         onMouseUp={handleTextSelection}

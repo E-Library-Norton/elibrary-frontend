@@ -614,6 +614,7 @@ export default function BookDetailPage() {
                 {/* Primary action */}
                 {book.pdfUrl ? (
                   <Button
+                    data-tour="read-online"
                     className="w-full gap-2.5 bg-[#20659C] hover:bg-[#55B9EA] shadow-lg shadow-[#20659C]/20 hover:shadow-[#55B9EA]/30 transition-all duration-300 hover:scale-[1.02] h-12 text-base font-semibold rounded-xl"
                     onClick={() => requestProtectedAction("read")}
                   >

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 interface ContinueReadingButtonProps {
   bookId: string | number;
@@ -15,6 +16,7 @@ export function ContinueReadingButton({
   from = "/library",
   className,
 }: ContinueReadingButtonProps) {
+  const t = useTranslations("Library");
   const params = new URLSearchParams({
     page: String(Math.max(1, pageNumber)),
     from,
@@ -24,7 +26,7 @@ export function ContinueReadingButton({
     <Button asChild className={className}>
       <Link href={`/books/${bookId}/read?${params.toString()}`}>
         <BookOpen className="h-4 w-4" />
-        Continue Reading
+        {t("continueReading")}
       </Link>
     </Button>
   );

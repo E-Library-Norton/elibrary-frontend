@@ -2,6 +2,7 @@
 
 import { BookMarked, Users, BookOpen, Globe, TrendingUp } from "lucide-react";
 import { useGetStatsQuery } from "@/store/api/booksApi";
+import { useTranslations } from "next-intl";
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M+`;
@@ -13,8 +14,8 @@ const STAT_CONFIGS = [
   {
     icon: BookOpen,
     key: "total_books" as const,
-    label: "Digital Books",
-    desc: "Across all faculties",
+    labelKey: "digitalBooks" as const,
+    descKey: "digitalBooksDescription" as const,
     color: "text-[#20659C]",
     iconBg: "bg-[#20659C]/8 dark:bg-[#20659C]/15",
     border: "border-[#20659C]/15 dark:border-[#20659C]/20",
@@ -24,8 +25,8 @@ const STAT_CONFIGS = [
   {
     icon: Users,
     key: "total_members" as const,
-    label: "Active Students",
-    desc: "Enrolled this year",
+    labelKey: "activeStudents" as const,
+    descKey: "activeStudentsDescription" as const,
     color: "text-[#DF900A]",
     iconBg: "bg-[#DF900A]/8 dark:bg-[#DF900A]/15",
     border: "border-[#DF900A]/15 dark:border-[#DF900A]/20",
@@ -35,8 +36,8 @@ const STAT_CONFIGS = [
   {
     icon: BookMarked,
     key: "total_categories" as const,
-    label: "Subject Areas",
-    desc: "All disciplines",
+    labelKey: "subjectAreas" as const,
+    descKey: "subjectAreasDescription" as const,
     color: "text-[#55B9EA]",
     iconBg: "bg-[#55B9EA]/10 dark:bg-[#55B9EA]/15",
     border: "border-[#55B9EA]/15 dark:border-[#55B9EA]/20",
@@ -46,8 +47,8 @@ const STAT_CONFIGS = [
   {
     icon: Globe,
     key: null,
-    label: "Online Access",
-    desc: "Always available",
+    labelKey: "onlineAccess" as const,
+    descKey: "onlineAccessDescription" as const,
     color: "text-emerald-500",
     iconBg: "bg-emerald-50 dark:bg-emerald-900/15",
     border: "border-emerald-200/40 dark:border-emerald-800/30",
@@ -57,6 +58,7 @@ const STAT_CONFIGS = [
 ];
 
 export default function StatsSection() {
+  const t = useTranslations("Home");
   const { data, isLoading } = useGetStatsQuery();
   const stats_data = data?.data;
 
@@ -73,13 +75,13 @@ export default function StatsSection() {
         <div className="text-center mb-12 opacity-0 animate-[heroReveal_0.5s_ease_0.1s_forwards]">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#20659C]/8 dark:bg-[#20659C]/15 text-[#20659C] dark:text-[#55B9EA] text-xs font-bold uppercase tracking-wider mb-3">
             <TrendingUp className="w-3.5 h-3.5" />
-            Growing Every Day
+            {t("statsEyebrow")}
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A1A1A] dark:text-white">
-            E-Library by the numbers
+            {t("statsTitle")}
           </h2>
           <p className="mt-2 text-[#5E5E5E] dark:text-gray-400 max-w-md mx-auto">
-            Serving every Norton University student with world-class academic resources.
+            {t("statsDescription")}
           </p>
         </div>
 
@@ -111,8 +113,8 @@ export default function StatsSection() {
                       {value}
                     </div>
                   )}
-                  <div className="text-sm font-bold text-[#1A1A1A] dark:text-white">{s.label}</div>
-                  <div className="text-xs text-[#9CA3AF] mt-0.5">{s.desc}</div>
+                  <div className="text-sm font-bold text-[#1A1A1A] dark:text-white">{t(s.labelKey)}</div>
+                  <div className="text-xs text-[#9CA3AF] mt-0.5">{t(s.descKey)}</div>
                 </div>
               </div>
             );

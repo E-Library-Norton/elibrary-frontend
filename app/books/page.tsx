@@ -30,17 +30,18 @@ import { StarRating } from "@/components/ui/star-rating";
 import { useAppSelector } from "@/lib/hooks";
 import { withCatalogReturnHref } from "@/lib/catalog-navigation";
 import { selectIsFavorite } from "@/store/slices/librarySlice";
+import { useTranslations } from "next-intl";
 
 
 const LIMIT = 12;
 
 const sortOptions = [
-  { value: "created_at", label: "Newest First", order: "DESC" },
-  { value: "title", label: "Title A–Z", order: "ASC" },
-  { value: "views", label: "Most Viewed", order: "DESC" },
-  { value: "review_count", label: "Most Reviewed", order: "DESC" },
-  { value: "downloads", label: "Most Downloaded", order: "DESC" },
-];
+  { value: "created_at", labelKey: "newest", order: "DESC" },
+  { value: "title", labelKey: "titleAscending", order: "ASC" },
+  { value: "views", labelKey: "mostViewed", order: "DESC" },
+  { value: "review_count", labelKey: "mostReviewed", order: "DESC" },
+  { value: "downloads", labelKey: "mostDownloaded", order: "DESC" },
+] as const;
 
 const defaultSort = sortOptions[0];
 
@@ -116,6 +117,7 @@ function SavedBadge({ bookId }: { bookId: number }) {
 }
 
 function BooksPageContent() {
+  const t = useTranslations("Catalog");
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -248,23 +250,26 @@ function BooksPageContent() {
           <div className="mb-6 opacity-0 animate-[heroReveal_0.8s_ease_0.1s_forwards]">
             <div className="inline-flex items-center gap-2 bg-white/[0.08] backdrop-blur-sm border border-white/[0.12] rounded-full px-4 py-1.5 text-sm font-medium text-white/90">
               <BookOpen className="w-3.5 h-3.5 text-[#DF900A]" />
-              Academic Collection
+              {t("booksEyebrow")}
             </div>
           </div>
 
           {/* Headline */}
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-4 opacity-0 animate-[heroReveal_0.8s_ease_0.2s_forwards]">
-            Browse Our{" "}
+            {t("booksTitle")}{" "}
             <span className="bg-gradient-to-r from-[#55B9EA] via-[#7ecbf2] to-[#55B9EA] bg-clip-text text-transparent bg-[length:200%_auto] animate-[hero-gradient_4s_ease-in-out_infinite]">
-              Library
+              {t("booksTitleHighlight")}
             </span>
           </h1>
           <p className="text-base sm:text-lg text-white/55 max-w-xl mx-auto mb-8 opacity-0 animate-[heroReveal_0.8s_ease_0.35s_forwards]">
-            Explore our collection of academic books, journals, and resources.
+            {t("booksDescription")}
           </p>
 
           {/* Search Bar */}
-          <div className="max-w-lg mx-auto opacity-0 animate-[heroReveal_0.8s_ease_0.5s_forwards]">
+          <div
+            data-tour="catalog-search"
+            className="max-w-lg mx-auto opacity-0 animate-[heroReveal_0.8s_ease_0.5s_forwards]"
+          >
             <div className="group flex gap-2 bg-white/[0.08] backdrop-blur-md border border-white/[0.12] rounded-2xl p-1.5 transition-all duration-300 hover:bg-white/[0.12] hover:border-white/[0.18] focus-within:bg-white/[0.12] focus-within:border-white/[0.2] focus-within:shadow-lg focus-within:shadow-[#55B9EA]/10">
               <div className="relative flex-1">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/35" />
@@ -276,7 +281,7 @@ function BooksPageContent() {
                       pushQuery({ search: searchInput.trim() || null, page: null });
                     }
                   }}
-                  placeholder="Search title, author, ISBN..."
+                  placeholder={t("booksSearchPlaceholder")}
                   className="pl-10 h-11 bg-transparent text-white placeholder:text-white/35 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
@@ -285,7 +290,7 @@ function BooksPageContent() {
                 className="bg-[#DF900A] hover:bg-[#E3A13C] text-white rounded-xl px-6 h-11 font-semibold shadow-lg shadow-[#DF900A]/20 hover:shadow-[#DF900A]/30 transition-all duration-300 hover:scale-[1.02]"
                 onClick={() => pushQuery({ search: searchInput.trim() || null, page: null })}
               >
-                Search
+                {t("search")}
               </Button>
             </div>
           </div>
@@ -306,12 +311,13 @@ function BooksPageContent() {
             {showFilter && (
               <button
                 type="button"
-                aria-label="Close filters"
+                aria-label={t("closeFilters")}
                 className="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm lg:hidden"
                 onClick={() => setShowFilter(false)}
               />
             )}
             <aside
+              data-tour="catalog-filters"
               className={cn(
                 "lg:w-56 shrink-0 space-y-4",
                 showFilter
@@ -320,13 +326,13 @@ function BooksPageContent() {
               )}
             >
               <div className="mb-2 flex items-center justify-between px-1 lg:hidden">
-                <span className="text-sm font-bold text-[#1A1A1A] dark:text-white">Filters</span>
+                <span className="text-sm font-bold text-[#1A1A1A] dark:text-white">{t("filters")}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0"
                   onClick={() => setShowFilter(false)}
-                  aria-label="Close filters"
+                  aria-label={t("closeFilters")}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -335,7 +341,7 @@ function BooksPageContent() {
               <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-[#E2E8F0]/60 dark:border-gray-800/60 p-5 shadow-sm">
                 <h3 className="font-bold text-[#1A1A1A] dark:text-white mb-4 text-sm flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-[#20659C]" />
-                  Categories
+                  {t("categories")}
                 </h3>
                 <ul className="space-y-1">
                   <li>
@@ -348,7 +354,7 @@ function BooksPageContent() {
                           : "text-[#5E5E5E] dark:text-gray-400 hover:bg-[#20659C]/10 hover:text-[#20659C]"
                       )}
                     >
-                      All
+                      {t("all")}
                     </button>
                   </li>
                   {categories.map((cat) => (
@@ -373,7 +379,7 @@ function BooksPageContent() {
               <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-[#E2E8F0]/60 dark:border-gray-800/60 p-5 shadow-sm">
                 <h3 className="font-bold text-[#1A1A1A] dark:text-white mb-4 text-sm flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-[#DF900A]" />
-                  Sort By
+                  {t("sortBy")}
                 </h3>
                 <div className="space-y-1">
                   {sortOptions.map((opt) => (
@@ -387,7 +393,7 @@ function BooksPageContent() {
                           : "text-[#5E5E5E] dark:text-gray-400 hover:bg-[#DF900A]/5"
                       )}
                     >
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </button>
                   ))}
                 </div>
@@ -400,21 +406,21 @@ function BooksPageContent() {
               <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Button
+                    data-tour="catalog-filter-toggle"
                     variant="outline"
                     size="sm"
                     className="lg:hidden gap-1.5"
                     onClick={() => setShowFilter(!showFilter)}
                   >
                     {showFilter ? <X className="w-4 h-4" /> : <Filter className="w-4 h-4" />}
-                    {showFilter ? "Hide" : "Filters"}
+                    {showFilter ? t("hideFilters") : t("filters")}
                   </Button>
 
                   {isLoading ? (
-                    <span className="text-sm text-[#9CA3AF]">Loading…</span>
+                    <span className="text-sm text-[#9CA3AF]">{t("loading")}</span>
                   ) : (
                     <span className="text-sm text-[#5E5E5E] dark:text-gray-400">
-                      <span className="font-semibold text-[#1A1A1A] dark:text-white">{total}</span>{" "}
-                      book{total !== 1 ? "s" : ""} found
+                      {t("booksFound", { count: total })}
                     </span>
                   )}
 
@@ -425,7 +431,7 @@ function BooksPageContent() {
                       onClick={clearFilters}
                       className="text-red-500 hover:text-red-600 gap-1 h-7 px-2"
                     >
-                      <X className="w-3 h-3" /> Clear
+                      <X className="w-3 h-3" /> {t("clear")}
                     </Button>
                   )}
 
@@ -457,14 +463,14 @@ function BooksPageContent() {
               {isError && !isLoading && (
                 <div className="flex items-center gap-3 p-5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 mb-6">
                   <AlertCircle className="w-5 h-5 shrink-0" />
-                  <p className="text-sm">Failed to load books. Please check your connection.</p>
+                  <p className="text-sm">{t("booksLoadError")}</p>
                 </div>
               )}
 
               {/* Background refresh indicator */}
               {isFetching && !isLoading && (
                 <div className="flex items-center gap-2 text-xs text-[#9CA3AF] mb-3">
-                  <Loader2 className="w-3 h-3 animate-spin" /> Updating…
+                  <Loader2 className="w-3 h-3 animate-spin" /> {t("updating")}
                 </div>
               )}
 
@@ -476,14 +482,20 @@ function BooksPageContent() {
               ) : books.length === 0 ? (
                 <div className="text-center py-20">
                   <BookOpen className="w-16 h-16 text-[#9CA3AF] mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-[#1A1A1A] dark:text-white mb-2">No books found</h3>
-                  <p className="text-[#5E5E5E] dark:text-gray-400">Try adjusting your search or filters.</p>
+                  <h3 className="text-xl font-bold text-[#1A1A1A] dark:text-white mb-2">{t("booksEmpty")}</h3>
+                  <p className="text-[#5E5E5E] dark:text-gray-400">{t("emptyDescription")}</p>
                 </div>
               ) : view === "grid" ? (
                 /* ── Grid view ── */
                 <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
                   {books.map((book, idx) => (
-                    <Link href={getBookHref(book.id)} key={book.id} className="group opacity-0 animate-[heroReveal_0.5s_ease_forwards]" style={{ animationDelay: `${idx * 0.05}s` }}>
+                    <Link
+                      data-tour="book-card"
+                      href={getBookHref(book.id)}
+                      key={book.id}
+                      className="group opacity-0 animate-[heroReveal_0.5s_ease_forwards]"
+                      style={{ animationDelay: `${idx * 0.05}s` }}
+                    >
                       <div className="relative h-full">
                         {/* Hover glow */}
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-[#20659C] to-[#55B9EA] rounded-2xl opacity-0 group-hover:opacity-30 blur-md transition-all duration-500" />
@@ -555,7 +567,13 @@ function BooksPageContent() {
                 /* ── List view ── */
                 <div className="space-y-3">
                   {books.map((book, idx) => (
-                    <Link href={getBookHref(book.id)} key={book.id} className="group block opacity-0 animate-[heroReveal_0.4s_ease_forwards]" style={{ animationDelay: `${idx * 0.04}s` }}>
+                    <Link
+                      data-tour="book-card"
+                      href={getBookHref(book.id)}
+                      key={book.id}
+                      className="group block opacity-0 animate-[heroReveal_0.4s_ease_forwards]"
+                      style={{ animationDelay: `${idx * 0.04}s` }}
+                    >
                       <div className="relative">
                         {/* Hover glow */}
                         <div className="absolute -inset-px bg-gradient-to-r from-[#20659C] to-[#55B9EA] rounded-2xl opacity-0 group-hover:opacity-20 blur-sm transition-all duration-500" />
@@ -678,11 +696,12 @@ function BooksPageContent() {
 }
 
 export default function BooksPage() {
+  const t = useTranslations("Catalog");
   return (
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] dark:bg-gray-950">
-          <Loader2 className="h-8 w-8 animate-spin text-[#20659C]" aria-label="Loading books" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#20659C]" aria-label={t("booksLoadingLabel")} />
         </div>
       }
     >

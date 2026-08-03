@@ -1,13 +1,18 @@
-import type { Metadata, Viewport } from "next"; 
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import "driver.js/dist/driver.css";
+import "driver.js/dist/hints.css";
 import "./globals.css";
+import { googleSans, notoSansKhmer } from "./fonts";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { AppIntlProvider } from "@/components/i18n/AppIntlProvider";
 import StoreProvider from "@/lib/storeProvider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SocketProvider } from "@/components/SocketProvider";
 import { Toaster } from "sonner";
-import { GoogleAnalytics } from '@next/third-parties/google';
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { PreferenceOnboarding } from "@/components/onboarding/PreferenceOnboarding";
 import {
   SITE_URL,
   SITE_TITLE,
@@ -16,16 +21,6 @@ import {
   SITE_NAME,
   SITE_IMAGE,
 } from "@/lib/seo";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -112,29 +107,33 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${googleSans.variable} ${notoSansKhmer.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-white dark:bg-[#0F172A] text-[#1A1A1A] dark:text-[#F1F5F9]">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <StoreProvider>
-            <SocketProvider>
-              <Navbar />
-              <main className="flex-1 pt-16">{children}</main>
-              {/* Google Analytics */}
-              <GoogleAnalytics gaId="G-M7LRQPQ5YR" />
-              <Footer />
-            </SocketProvider>
-            <Toaster
-              position="top-right"
-              richColors
-              closeButton
-              toastOptions={{
-                className: "font-sans",
-              }}
-            />
-          </StoreProvider>
-        </ThemeProvider>
+      <body className="flex min-h-full flex-col bg-white font-sans text-[#1A1A1A] dark:bg-[#0F172A] dark:text-[#F1F5F9]">
+        <AppIntlProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <StoreProvider>
+              <SocketProvider>
+                <Navbar />
+                <main className="flex-1 pt-14">{children}</main>
+                {/* Google Analytics */}
+                <GoogleAnalytics gaId="G-M7LRQPQ5YR" />
+                <Footer />
+                <PreferenceOnboarding />
+                <OnboardingTour />
+              </SocketProvider>
+              <Toaster
+                position="top-right"
+                richColors
+                closeButton
+                toastOptions={{
+                  className: "font-sans",
+                }}
+              />
+            </StoreProvider>
+          </ThemeProvider>
+        </AppIntlProvider>
       </body>
     </html>
   );

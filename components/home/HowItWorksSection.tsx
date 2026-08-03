@@ -1,14 +1,16 @@
+"use client";
+
 import { Search, BookOpen, Headphones, ArrowRight, Video } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 const steps = [
   {
     number: "01",
     icon: Search,
-    title: "Search & Discover",
-    description:
-      "Find books, research papers, and resources instantly. Filter by faculty, author, subject, or keyword.",
+    titleKey: "stepSearchTitle" as const,
+    descriptionKey: "stepSearchDescription" as const,
     color: "text-[#20659C]",
     iconBg: "bg-[#20659C]/10 dark:bg-[#20659C]/20",
     numberColor: "text-[#20659C]",
@@ -18,9 +20,8 @@ const steps = [
   {
     number: "02",
     icon: BookOpen,
-    title: "Read in Browser",
-    description:
-      "Open any book directly in your browser with our smooth PDF reader. Bookmark, highlight, and take notes — no downloads needed.",
+    titleKey: "stepReadTitle" as const,
+    descriptionKey: "stepReadDescription" as const,
     color: "text-[#DF900A]",
     iconBg: "bg-[#DF900A]/10 dark:bg-[#DF900A]/20",
     numberColor: "text-[#DF900A]",
@@ -30,9 +31,8 @@ const steps = [
   {
     number: "03",
     icon: Headphones,
-    title: "Watch, Listen & Download",
-    description:
-      "Access video lectures, audiobooks, and downloadable PDFs. Learn on any device, anywhere, at your own pace.",
+    titleKey: "stepMediaTitle" as const,
+    descriptionKey: "stepMediaDescription" as const,
     color: "text-[#55B9EA]",
     iconBg: "bg-[#55B9EA]/10 dark:bg-[#55B9EA]/20",
     numberColor: "text-[#55B9EA]",
@@ -42,6 +42,7 @@ const steps = [
 ];
 
 export default function HowItWorksSection() {
+  const t = useTranslations("Home");
   return (
     <section className="py-10 bg-[#F8FAFC] dark:bg-gray-950 relative overflow-hidden isolate">
       {/* Fallback & Custom CSS Keyframe Injector */}
@@ -64,14 +65,13 @@ export default function HowItWorksSection() {
         <div className="text-center mb-20 opacity-0 animate-reveal [animation-delay:0.1s]">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#20659C]/10 dark:bg-[#20659C]/20 text-[#20659C] dark:text-[#55B9EA] text-xs font-bold uppercase tracking-widest mb-5 backdrop-blur-sm border border-[#20659C]/10">
             <Video className="w-3.5 h-3.5" />
-            How It Works
+            {t("howEyebrow")}
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-5">
-            Your library in <span className="text-[#20659C] dark:text-[#55B9EA]">3 simple steps</span>
+            {t("howTitle")} <span className="text-[#20659C] dark:text-[#55B9EA]">{t("howTitleHighlight")}</span>
           </h2>
           <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-            Everything you need to succeed academically — free for every Norton
-            University student, available instantly on any device.
+            {t("howDescription")}
           </p>
         </div>
 
@@ -103,10 +103,10 @@ export default function HowItWorksSection() {
               {/* Title & Body Meta */}
               <div className="space-y-3">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight group-hover:text-[#20659C] dark:group-hover:text-[#55B9EA] transition-colors duration-300">
-                  {s.title}
+                  {t(s.titleKey)}
                 </h3>
                 <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 leading-relaxed font-normal">
-                  {s.description}
+                  {t(s.descriptionKey)}
                 </p>
               </div>
 
@@ -114,7 +114,7 @@ export default function HowItWorksSection() {
               <div
                 className={`mt-auto pt-4 inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase ${s.color} opacity-70 group-hover:opacity-100 transition-all duration-300`}
               >
-                <span>Step {s.number} of 03</span>
+                <span>{t("stepProgress", { number: s.number })}</span>
                 <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 transform group-hover:translate-x-1.5" />
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function HowItWorksSection() {
             className="bg-[#20659C] hover:bg-[#164b75] dark:bg-[#20659C] dark:hover:bg-[#2c7cb9] text-white px-8 py-6 rounded-xl gap-3 shadow-xl shadow-[#20659C]/10 hover:shadow-[#20659C]/20 transition-all duration-300 hover:scale-[1.03] text-base font-semibold"
           >
             <Link href="/books">
-              Start Exploring <ArrowRight className="w-5 h-5" />
+              {t("startExploring")} <ArrowRight className="w-5 h-5" />
             </Link>
           </Button>
         </div>

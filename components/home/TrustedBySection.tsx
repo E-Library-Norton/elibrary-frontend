@@ -1,19 +1,20 @@
 "use client";
 
 import { Marquee } from "@/components/ui/marquee";
+import { useTranslations } from "next-intl";
 
 const departments = [
-  { short: "CS",   name: "Computer Science" },
-  { short: "BBA",  name: "Business Admin" },
-  { short: "LAW",  name: "Faculty of Law" },
-  { short: "MED",  name: "Medicine" },
-  { short: "ENG",  name: "Engineering" },
-  { short: "SCI",  name: "Natural Science" },
-  { short: "EDU",  name: "Education" },
-  { short: "AGRI", name: "Agriculture" },
-  { short: "ART",  name: "Fine Arts" },
-  { short: "ECON", name: "Economics" },
-];
+  { short: "CS", nameKey: "departmentComputerScience" },
+  { short: "BBA", nameKey: "departmentBusiness" },
+  { short: "LAW", nameKey: "departmentLaw" },
+  { short: "MED", nameKey: "departmentMedicine" },
+  { short: "ENG", nameKey: "departmentEngineering" },
+  { short: "SCI", nameKey: "departmentScience" },
+  { short: "EDU", nameKey: "departmentEducation" },
+  { short: "AGRI", nameKey: "departmentAgriculture" },
+  { short: "ART", nameKey: "departmentArts" },
+  { short: "ECON", nameKey: "departmentEconomics" },
+] as const;
 
 function DeptLogo({ short, name }: { short: string; name: string }) {
   return (
@@ -27,17 +28,22 @@ function DeptLogo({ short, name }: { short: string; name: string }) {
 }
 
 export default function TrustedBySection() {
+  const t = useTranslations("Home");
   return (
     <section className="py-10 bg-white dark:bg-gray-950 border-y border-[#E2E8F0] dark:border-gray-800/60 overflow-hidden">
       <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-[#9CA3AF] mb-6">
-        Serving all faculties at Norton University
+        {t("servingFaculties")}
       </p>
       <div className="relative">
         <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white dark:from-gray-950 to-transparent z-10" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white dark:from-gray-950 to-transparent z-10" />
         <Marquee pauseOnHover className="[--duration:35s] [--gap:0.75rem]">
-          {departments.map((d) => (
-            <DeptLogo key={d.short} {...d} />
+          {departments.map((department) => (
+            <DeptLogo
+              key={department.short}
+              short={department.short}
+              name={t(department.nameKey)}
+            />
           ))}
         </Marquee>
       </div>
