@@ -49,6 +49,22 @@ export interface ReadingNote {
   updated_at: string;
 }
 
+export interface ReadingNotesKeyPage {
+  pageNumber: number;
+  reason: string;
+  excerpt: string;
+}
+
+export interface ReadingNotesSummary {
+  summary: string;
+  keyPoints: string[];
+  keyPages: ReadingNotesKeyPage[];
+  noteCount: number;
+  coveredPages: number;
+  generatedAt: string;
+  generatedBy: "ai" | "local";
+}
+
 export interface ReadingLibraryBook {
   id: number;
   title: string;

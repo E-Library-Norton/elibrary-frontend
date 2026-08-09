@@ -6,6 +6,7 @@ import type {
   CreateReadingNoteInput,
   ReadingLibraryItem,
   ReadingNote,
+  ReadingNotesSummary,
   ReadingProgress,
   UpdateReadingNoteInput,
   UpdateReadingProgressInput,
@@ -124,6 +125,16 @@ export const readingApi = baseApi.injectEndpoints({
       ],
     }),
 
+    summarizeReadingNotes: builder.mutation<
+      ApiResponse<ReadingNotesSummary>,
+      string | number
+    >({
+      query: (bookId) => ({
+        url: `/books/${bookId}/notes/summary`,
+        method: "POST",
+      }),
+    }),
+
     getReadingLibrary: builder.query<
       ApiResponse<{ items: ReadingLibraryItem[] }>,
       void
@@ -144,5 +155,6 @@ export const {
   useCreateReadingNoteMutation,
   useUpdateReadingNoteMutation,
   useDeleteReadingNoteMutation,
+  useSummarizeReadingNotesMutation,
   useGetReadingLibraryQuery,
 } = readingApi;

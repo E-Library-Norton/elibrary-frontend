@@ -55,6 +55,7 @@ import {
   useGetBookmarksQuery,
   useGetReadingNotesQuery,
   useGetReadingProgressQuery,
+  useSummarizeReadingNotesMutation,
   useUpdateReadingNoteMutation,
   useUpdateReadingProgressMutation,
 } from "@/store/api/readingApi";
@@ -189,6 +190,15 @@ export default function PdfReader({
   const [updateReadingNote, { isLoading: isUpdatingNote }] =
     useUpdateReadingNoteMutation();
   const [deleteReadingNote] = useDeleteReadingNoteMutation();
+  const [
+    summarizeReadingNotes,
+    {
+      data: notesSummaryResponse,
+      isLoading: isSummarizingNotes,
+      error: notesSummaryError,
+      reset: resetNotesSummary,
+    },
+  ] = useSummarizeReadingNotesMutation();
 
   const explicitPage = parsePositivePage(searchParams.get("page"));
   const serverProgress = progressResponse?.data;
@@ -196,6 +206,13 @@ export default function PdfReader({
     explicitPage ?? serverProgress?.currentPage ?? localSavedPage;
   const bookmarks = bookmarkResponse?.data ?? EMPTY_BOOKMARKS;
   const notes = notesResponse?.data ?? EMPTY_NOTES;
+  const notesSummary = notesSummaryResponse?.data ?? null;
+  const summarySourceVersion = `${numericBookId}::${notes
+    .map((note) => `${note.id}:${note.updated_at}`)
+    .join("|")}::${bookmarks
+    .map((bookmark) => `${bookmark.id}:${bookmark.updated_at}`)
+    .join("|")}`;
+  const previousSummarySourceVersionRef = useRef(summarySourceVersion);
 
   const [currentPage, setCurrentPage] = useState(startingPage);
   const [totalPages, setTotalPages] = useState(
@@ -234,6 +251,14 @@ export default function PdfReader({
   const layoutPlugin = defaultLayoutPlugin({
     sidebarTabs: (defaultTabs) => defaultTabs,
   });
+
+  useEffect(() => {
+    if (previousSummarySourceVersionRef.current === summarySourceVersion) {
+      return;
+    }
+    previousSummarySourceVersionRef.current = summarySourceVersion;
+    resetNotesSummary();
+  }, [resetNotesSummary, summarySourceVersion]);
 
   useEffect(() => {
     if (!serverProgress) return;
@@ -658,6 +683,15 @@ export default function PdfReader({
     }
   }
 
+  async function handleSummarizeNotes() {
+    if (!numericBookId || notes.length === 0) return;
+    try {
+      await summarizeReadingNotes(numericBookId).unwrap();
+    } catch {
+      // The sidebar presents a contextual retry state.
+    }
+  }
+
   const isCurrentPageBookmarked = bookmarks.some(
     (bookmark) => bookmark.pageNumber === currentPage
   );
@@ -919,10 +953,21 @@ export default function PdfReader({
           notes={notes}
           isLoading={areNotesLoading}
           deletingId={deletingNoteId}
+          summary={notesSummary}
+          isSummarizing={isSummarizingNotes}
+          summaryError={
+            notesSummaryError
+              ? getApiErrorMessage(
+                  notesSummaryError,
+                  "Please try again in a moment."
+                )
+              : null
+          }
           onClose={() => setShowNotes(false)}
           onNavigate={jumpToPage}
           onEdit={handleEditNote}
           onDelete={handleDeleteNote}
+          onSummarize={handleSummarizeNotes}
         />
       </div>
 
