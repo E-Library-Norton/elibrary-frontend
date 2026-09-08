@@ -30,7 +30,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         )}
       >
         <Image
-          src={isEnglish ? "/en.webp" : "/kh.webp"}
+          src={isEnglish ? "/en.svg" : "/kh.svg"}
           alt={isEnglish ? "English" : "Khmer"}
           width={32}
           height={20}
